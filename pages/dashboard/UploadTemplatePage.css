@@ -1,0 +1,297 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.upload-page-container {
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: radial-gradient(circle at center, #0D1282 0%, #05084d 100%);
+  background-attachment: fixed;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  overflow-y: visible;
+}
+
+.upload-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 550px;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border-top: 10px solid #F0DE36;
+  animation: fadeIn 0.5s ease-out;
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+
+.upload-header h1 {
+  color: #0D1282;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.upload-header p {
+  color: #636e72;
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+}
+
+.drop-zone {
+  border: 2px dashed #0D1282;
+  background: rgba(13, 18, 130, 0.02);
+  border-radius: 16px;
+  padding: 50px 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  margin-bottom: 25px;
+  cursor: pointer;
+}
+
+.drop-zone:hover {
+  background: rgba(240, 222, 54, 0.1);
+  border-color: #F0DE36;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.form-group label {
+  display: block;
+  text-align: left;
+  font-weight: 700;
+  color: #0D1282;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #EEEDED;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  width: 100%;
+  background: #0D1282;
+  color: #F0DE36;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.template-editor {
+  margin-bottom: 24px;
+  border: 1px solid #dfe6e9;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fafcff;
+}
+
+.placeholder-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tool-chip {
+  border: 1px solid #0D1282;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0D1282;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 12px;
+}
+
+.tool-chip.active {
+  background: #0D1282;
+  color: #F0DE36;
+}
+
+.marker-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.upload-card .template-preview {
+  position: relative;
+  width: 100%;
+  height: auto;
+  border: 2px solid #0D1282;
+  border-radius: 12px;
+  background: #f1f2f6;
+  overflow: hidden;
+}
+
+.upload-card .template-preview.landscape {
+  max-width: 100%;
+  margin: 0;
+}
+
+.upload-card .template-preview.portrait {
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.upload-card .template-preview img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+}
+
+.template-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: grab;
+  border: none;
+  white-space: nowrap;
+}
+
+.marker-list {
+  margin-top: 12px;
+}
+
+.marker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  background: #ffffff;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-bottom: 5px;
+}
+
+.marker-row button {
+  background: #D71313;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* I-update ang container para maging relative position */
+.upload-page-container {
+  position: relative; /* Mahalaga ito para sa positioning ng back button */
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: radial-gradient(circle at center, #0D1282 0%, #05084d 100%);
+  background-attachment: fixed;
+  padding: 80px 20px 40px; /* Tinaasan ang top padding para sa back button */
+  box-sizing: border-box;
+  overflow-y: visible;
+}
+
+/* Back Button Style */
+.back-btn {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(240, 222, 54, 0.5);
+  color: #F0DE36;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  z-index: 10;
+}
+
+.back-btn:hover {
+  background: #F0DE36;
+  color: #0D1282;
+  transform: translateX(-5px);
+}
+
+@media (max-width: 768px) {
+  .marker-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-card .template-preview.portrait {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-page-container {
+    padding: 140px 16px 24px;
+  }
+
+  .upload-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+    margin-top: 40px;
+    margin-bottom: 24px;
+  }
+
+  .upload-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .upload-header p {
+    margin-bottom: 22px;
+  }
+
+  .drop-zone {
+    padding: 36px 16px;
+  }
+
+  .placeholder-toolbar {
+    gap: 6px;
+  }
+
+  .tool-chip {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .back-btn {
+    top: 16px;
+    left: 16px;
+  }
+
+  .marker-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

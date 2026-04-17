@@ -1,0 +1,404 @@
+/* StudentDashboard.css - Scroll Fixed */
+
+/* 1. RESET HTML/BODY: Alisin ang rigid overflow */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f8f9fa;
+}
+
+/* 2. LAYOUT: I-lock ang container sa screen */
+.student-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden; /* Para hindi mag-double scroll sa labas */
+  background-color: #f8f9fa;
+}
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* 3. SIDEBAR: Fixed at hindi gumagalaw */
+.student-sidebar {
+  width: 260px;
+  background-color: #0D1282;
+  color: #EEEDED;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  flex-shrink: 0; /* Huwag hayaang mapipi */
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.student-sidebar h2 {
+  color: #F0DE36;
+  margin-bottom: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.4rem;
+}
+
+.student-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.student-nav-link {
+  color: rgba(238,237,237,0.7);
+  padding: 0.9rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.student-nav-link:hover {
+  background: rgba(255,255,255,0.1);
+  color: #F0DE36;
+}
+
+.student-nav-link.active {
+  background: #F0DE36;
+  color: #0D1282;
+}
+
+/* 4. MAIN CONTENT: DITO ANG SCROLL FIX */
+.student-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  height: 100vh;      /* Kapantay ng screen */
+  overflow-y: auto;   /* 🔥 ETO ANG NAG-ENABLE NG SCROLL */
+  min-width: 0;       /* Iwas sa layout breaking */
+}
+
+/* HEADER */
+.student-header h1 {
+  color: #0D1282; /* Iniba ko to para mabasa, change to #FFFF kung dark mode header mo */
+  margin-bottom: 5px;
+}
+
+.student-header p {
+  color: #64748b;
+}
+
+/* TABLE SECTION */
+.student-table-container {
+  display: block;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem; /* Space sa dulo ng scroll */
+}
+
+/* TITLE */
+.section-title {
+  margin-bottom: 15px;
+  color: #0D1282;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-left: 4px solid #F0DE36;
+  padding-left: 10px;
+}
+
+/* TABLE */
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-table th {
+  padding: 12px 10px;
+  background: #f8fafc;
+  color: #0D1282;
+  font-size: 0.75rem;
+  text-align: center;
+  border-bottom: 2px solid #EEEDED;
+  text-transform: uppercase;
+}
+
+.student-table td {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+/* ACTION BUTTONS */
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.edit-btn,
+.save-btn {
+  padding: 6px 12px;
+  font-size: 0.65rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 70px;
+  text-transform: uppercase;
+}
+
+.edit-btn {
+  border: 1px solid #0D1282;
+  color: #0D1282;
+  background: transparent;
+}
+
+.edit-btn:hover {
+  background: #0D1282;
+  color: white;
+}
+
+.save-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+/* BADGE */
+.badge {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.badge.valid {
+  background: rgba(16,185,129,0.1);
+  color: #10b981;
+}
+
+.badge.invalid {
+  background: rgba(215,19,19,0.1);
+  color: #D71313;
+}
+
+/* MODAL - Fixed for stacking issues */
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.preview-card {
+  background: white;
+  width: 85%;
+  height: 85%;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-frame {
+  flex-grow: 1;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.close-preview-x {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #D71313;
+  color: white;
+  border: none;
+  font-size: 20px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-info {
+  text-align: center;
+  padding: 15px;
+  font-weight: 700;
+  background: #f8fafc;
+  color: #0D1282;
+}
+
+/* RESPONSIVE */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .student-container {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1200;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+    padding: 10px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .mobile-menu-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    border-radius: 999px;
+    background: #ffffff;
+  }
+
+  .mobile-menu-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 900;
+  }
+
+  .student-sidebar {
+    width: min(280px, 82vw);
+    height: 100vh;
+    min-height: 100vh;
+    padding: 1rem;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 1000;
+    overflow-y: auto;
+    align-items: center;
+  }
+
+  .student-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .student-sidebar h2 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .student-nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .student-nav-link {
+    padding: 0.7rem 0.8rem;
+    justify-content: flex-start;
+  }
+
+  .student-container {
+    width: 100%;
+  }
+  .student-main {
+    padding: 1rem;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .student-table-container {
+    padding: 1rem;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .student-table th,
+  .student-table td {
+    padding: 10px 8px;
+  }
+}
+
+.student-header h1, .student-header p {
+  color: #FFFF;
+}
+
+@media (max-width: 480px) {
+  .student-main {
+    padding: 0.75rem;
+  }
+
+  .student-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .student-header p {
+    font-size: 0.95rem;
+  }
+
+  .student-table-container {
+    padding: 0.85rem;
+    border-radius: 10px;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .edit-btn,
+  .save-btn {
+    min-width: 60px;
+    padding: 6px 10px;
+  }
+
+  .preview-card {
+    width: calc(100% - 20px);
+    height: auto;
+    max-height: 85vh;
+  }
+}
+

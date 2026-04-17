@@ -1,0 +1,153 @@
+/* CertificateCard.css */
+
+/* Card */
+.certificate-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  border: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.certificate-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Card Header */
+.cert-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.cert-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.cert-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  margin-bottom: 8px;
+}
+
+/* Card Body */
+.cert-body {
+  padding: 1.5rem;
+  color: #475569;
+}
+
+/* Card Footer */
+.cert-footer {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  text-align: center;
+}
+
+/* Buttons */
+.btn-preview, .btn-download, .btn-verify {
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-preview {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-download {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-verify {
+  background: #10b981;
+  color: white;
+}
+
+.btn-verify:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.preview-details {
+  margin-bottom: 2rem;
+}
+
+.preview-details p {
+  margin: 0.5rem 0;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.verify-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.verify-result.valid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.verify-result.invalid {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.verify-result.error {
+  background: #fef3c7;
+  color: #92400e;
+}
