@@ -228,6 +228,50 @@
   box-shadow: 0 0 0 2px rgba(13, 18, 130, 0.12);
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.pagination-summary,
+.pagination-page-indicator {
+  color: #4b5aa8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  border: 1px solid #0D1282;
+  background: #ffffff;
+  color: #0D1282;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #0D1282;
+  color: #ffffff;
+}
+
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .btn-add-row {
   margin-top: 10px;
   border: none;
@@ -475,6 +519,27 @@
   .upload-card {
     padding: 26px 18px;
   }
+
+  .pagination-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pagination-summary,
+  .pagination-page-indicator {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pagination-btn {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -532,6 +597,31 @@
 
   .drop-zone {
     padding: 36px 16px;
+  }
+
+  .pagination-controls {
+    gap: 10px;
+  }
+
+  .pagination-buttons {
+    flex-direction: column;
+  }
+
+  .pagination-btn {
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .pagination-summary,
+  .pagination-page-indicator {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .preview-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .upload-actions {

@@ -8,7 +8,8 @@ const PLACEHOLDER_OPTIONS = [
   { key: 'course', label: 'Course' },
   { key: 'certificate_id', label: 'Certificate ID' },
   { key: 'issued_by', label: 'Issued By' },
-  { key: 'date_issued', label: 'Date Issued' }
+  { key: 'date_issued', label: 'Date Issued' },
+  { key: 'qr_code', label: 'QR Code' }
 ];
 
 const DEFAULT_MARKER_STYLE = {

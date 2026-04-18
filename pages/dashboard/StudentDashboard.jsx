@@ -4,6 +4,7 @@ import axios from 'axios';
 import './StudentDashboard.css';
 
 const API_BASE = "http://127.0.0.1:8000";
+const ITEMS_PER_PAGE = 10;
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const StudentDashboard = () => {
   const [myCerts, setMyCerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const token = localStorage.getItem('token');
   const userName = localStorage.getItem('user_name') || 'Student';
@@ -26,6 +28,7 @@ const StudentDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMyCerts(res.data);
+      setCurrentPage(1);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -37,6 +40,13 @@ const StudentDashboard = () => {
     fetchMyCerts();
   }, [fetchMyCerts]);
 
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(myCerts.length / ITEMS_PER_PAGE));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [myCerts.length, currentPage]);
+
   const formatDate = (date) =>
     new Date(date).toLocaleDateString();
 
@@ -46,6 +56,10 @@ const StudentDashboard = () => {
   };
 
   const closeMobileNav = () => setIsMobileNavOpen(false);
+
+  const totalPages = Math.max(1, Math.ceil(myCerts.length / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedCerts = myCerts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePreview = async (cert) => {
     try {
@@ -163,7 +177,7 @@ const StudentDashboard = () => {
                   </thead>
 
                   <tbody>
-                    {myCerts.map(cert => (
+                    {paginatedCerts.map((cert) => (
                       <tr key={cert.id}>
                         <td>#{cert.certificate_id?.toUpperCase()}</td>
                         <td>{cert.course}</td>
@@ -194,6 +208,35 @@ const StudentDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {myCerts.length > 0 && (
+              <div className="pagination-controls">
+                <span className="pagination-summary">
+                  Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, myCerts.length)} of {myCerts.length}
+                </span>
+                <div className="pagination-buttons">
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="pagination-page-indicator">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             )}
           </section>

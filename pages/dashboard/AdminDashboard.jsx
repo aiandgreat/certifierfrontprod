@@ -6,6 +6,7 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const ITEMS_PER_PAGE = 10;
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [stats, setStats] = useState({ totalCerts: 0, totalUsers: 0, uploads: 0 });
   const [recentCerts, setRecentCerts] = useState([]);
@@ -31,6 +32,9 @@ const AdminDashboard = () => {
   const [selectedCerts, setSelectedCerts] = useState(new Set());
   const [downloadingCerts, setDownloadingCerts] = useState(false);
   const [reissuingCertId, setReissuingCertId] = useState(null);
+  const [currentUserPage, setCurrentUserPage] = useState(1);
+  const [currentTemplatePage, setCurrentTemplatePage] = useState(1);
+  const [currentCertPage, setCurrentCertPage] = useState(1);
 
   const token = localStorage.getItem('token');
   const API_BASE = "http://127.0.0.1:8000";
@@ -116,6 +120,18 @@ const AdminDashboard = () => {
     return cert.template;
   };
 
+  const filteredUsers = users.filter((user) => {
+    const term = userSearch.toLowerCase();
+    if (!term) return true;
+    return `${user.first_name || ''} ${user.last_name || ''} ${user.email || ''} ${user.username || ''}`
+      .toLowerCase()
+      .includes(term);
+  });
+
+  const filteredTemplates = templates.filter((template) =>
+    template.name.toLowerCase().includes(templateSearch.toLowerCase())
+  );
+
   const handleSaveReissue = async (cert) => {
     setReissuingCertId(cert.id);
     try {
@@ -184,8 +200,38 @@ const AdminDashboard = () => {
 
   const closeMobileNav = () => setIsMobileNavOpen(false);
 
+  useEffect(() => {
+    setCurrentUserPage(1);
+  }, [userSearch]);
+
+  useEffect(() => {
+    setCurrentTemplatePage(1);
+  }, [templateSearch]);
+
+  useEffect(() => {
+    setCurrentCertPage(1);
+  }, [issuanceSearch, certStatusFilter]);
+
+  useEffect(() => {
+    const totalUserPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
+    const totalTemplatePages = Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE));
+    const totalCertPages = Math.max(1, Math.ceil(recentCerts.length / ITEMS_PER_PAGE));
+
+    if (currentUserPage > totalUserPages) {
+      setCurrentUserPage(totalUserPages);
+    }
+    if (currentTemplatePage > totalTemplatePages) {
+      setCurrentTemplatePage(totalTemplatePages);
+    }
+    if (currentCertPage > totalCertPages) {
+      setCurrentCertPage(totalCertPages);
+    }
+  }, [filteredUsers.length, filteredTemplates.length, recentCerts.length, currentUserPage, currentTemplatePage, currentCertPage]);
+
   if (loading) return <div className="loading-screen">Loading Portal...</div>;
 
+  const paginatedUsers = filteredUsers.slice((currentUserPage - 1) * ITEMS_PER_PAGE, currentUserPage * ITEMS_PER_PAGE);
+  const paginatedTemplates = filteredTemplates.slice((currentTemplatePage - 1) * ITEMS_PER_PAGE, currentTemplatePage * ITEMS_PER_PAGE);
   const filteredRecentCerts = recentCerts
     .filter((cert) => {
       if (certStatusFilter === 'all') return true;
@@ -203,6 +249,8 @@ const AdminDashboard = () => {
       return certId.includes(term) || fullName.includes(term) || course.includes(term) || ownerName.includes(term);
     });
 
+  const paginatedRecentCerts = filteredRecentCerts.slice((currentCertPage - 1) * ITEMS_PER_PAGE, currentCertPage * ITEMS_PER_PAGE);
+
   const toggleCertSelect = (certId) => {
     const newSelected = new Set(selectedCerts);
     if (newSelected.has(certId)) {
@@ -214,10 +262,21 @@ const AdminDashboard = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedCerts.size === filteredRecentCerts.length) {
-      setSelectedCerts(new Set());
+    const visibleCertIds = paginatedRecentCerts.map((cert) => cert.id);
+    const allVisibleSelected = visibleCertIds.length > 0 && visibleCertIds.every((certId) => selectedCerts.has(certId));
+
+    if (allVisibleSelected) {
+      setSelectedCerts((prevSelected) => {
+        const nextSelected = new Set(prevSelected);
+        visibleCertIds.forEach((certId) => nextSelected.delete(certId));
+        return nextSelected;
+      });
     } else {
-      setSelectedCerts(new Set(filteredRecentCerts.map((cert) => cert.id)));
+      setSelectedCerts((prevSelected) => {
+        const nextSelected = new Set(prevSelected);
+        visibleCertIds.forEach((certId) => nextSelected.add(certId));
+        return nextSelected;
+      });
     }
   };
 
@@ -350,7 +409,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.filter(u => (u.first_name + ' ' + u.last_name).toLowerCase().includes(userSearch.toLowerCase())).map(user => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id}>
                     <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.first_name} onChange={e => setEditUserFormData({...editUserFormData, first_name: e.target.value})} /> : user.first_name}</td>
                     <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.last_name} onChange={e => setEditUserFormData({...editUserFormData, last_name: e.target.value})} /> : user.last_name}</td>
@@ -371,6 +430,32 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+          <div className="pagination-controls">
+            <span className="pagination-summary">
+              Showing {filteredUsers.length === 0 ? 0 : (currentUserPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentUserPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}
+            </span>
+            <div className="pagination-buttons">
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={() => setCurrentUserPage((page) => Math.max(1, page - 1))}
+                disabled={currentUserPage === 1}
+              >
+                Previous
+              </button>
+              <span className="pagination-page-indicator">
+                Page {currentUserPage} of {Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}
+              </span>
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={() => setCurrentUserPage((page) => Math.min(Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)), page + 1))}
+                disabled={currentUserPage >= Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </section>
 
         <section className="admin-table-container">
@@ -381,8 +466,9 @@ const AdminDashboard = () => {
           {templates.length === 0 ? (
             <p className="no-data">No templates uploaded yet.</p>
           ) : (
+            <>
             <div className="templates-grid">
-              {templates.filter(t => t.name.toLowerCase().includes(templateSearch.toLowerCase())).map(template => (
+              {paginatedTemplates.map((template) => (
                 <div key={template.id} className="template-card">
                   <div className="template-preview">
                     <img src={getFullUrl(template.background)} alt={template.name} onError={(e) => e.target.src = "https://via.placeholder.com/200x140?text=Error+Loading"} />
@@ -394,6 +480,33 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
+            <div className="pagination-controls">
+              <span className="pagination-summary">
+                Showing {filteredTemplates.length === 0 ? 0 : (currentTemplatePage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentTemplatePage * ITEMS_PER_PAGE, filteredTemplates.length)} of {filteredTemplates.length}
+              </span>
+              <div className="pagination-buttons">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  onClick={() => setCurrentTemplatePage((page) => Math.max(1, page - 1))}
+                  disabled={currentTemplatePage === 1}
+                >
+                  Previous
+                </button>
+                <span className="pagination-page-indicator">
+                  Page {currentTemplatePage} of {Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}
+                </span>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  onClick={() => setCurrentTemplatePage((page) => Math.min(Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE)), page + 1))}
+                  disabled={currentTemplatePage >= Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+            </>
           )}
         </section>
 
@@ -437,7 +550,7 @@ const AdminDashboard = () => {
                   <th style={{ width: '40px' }}>
                     <input
                       type="checkbox"
-                      checked={selectedCerts.size === filteredRecentCerts.length && filteredRecentCerts.length > 0}
+                      checked={paginatedRecentCerts.length > 0 && paginatedRecentCerts.every((cert) => selectedCerts.has(cert.id))}
                       onChange={toggleSelectAll}
                       title="Select all"
                     />
@@ -446,7 +559,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredRecentCerts.map(cert => (
+                {paginatedRecentCerts.map((cert) => (
                   <tr key={cert.id}>
                     <td style={{ width: '40px', textAlign: 'center' }}>
                       <input
@@ -487,6 +600,32 @@ const AdminDashboard = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="pagination-controls">
+            <span className="pagination-summary">
+              Showing {filteredRecentCerts.length === 0 ? 0 : (currentCertPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentCertPage * ITEMS_PER_PAGE, filteredRecentCerts.length)} of {filteredRecentCerts.length}
+            </span>
+            <div className="pagination-buttons">
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={() => setCurrentCertPage((page) => Math.max(1, page - 1))}
+                disabled={currentCertPage === 1}
+              >
+                Previous
+              </button>
+              <span className="pagination-page-indicator">
+                Page {currentCertPage} of {Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}
+              </span>
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={() => setCurrentCertPage((page) => Math.min(Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE)), page + 1))}
+                disabled={currentCertPage >= Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </section>
       </main>

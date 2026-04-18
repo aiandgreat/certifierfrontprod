@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import jsQR from 'jsqr';
 import './VerifyPage.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 
@@ -14,19 +15,71 @@ const VerifyPage = () => {
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [isCameraStarting, setIsCameraStarting] = useState(false);
+    const [cameraError, setCameraError] = useState('');
+
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const streamRef = useRef(null);
+    const animationFrameRef = useRef(null);
+    const scanningRef = useRef(false);
+
+    const normalizeScannedCertificateId = useCallback((value) => {
+        const rawValue = String(value || '').trim();
+        if (!rawValue) return '';
+
+        const pathMatch = rawValue.match(/(?:^|\/)(?:api\/)?verify\/([^/?#]+)/i);
+        if (pathMatch?.[1]) {
+            return decodeURIComponent(pathMatch[1]).trim();
+        }
+
+        try {
+            const parsedUrl = new URL(rawValue, window.location.origin);
+            const segments = parsedUrl.pathname.split('/').filter(Boolean);
+            if (segments.length > 0) {
+                return decodeURIComponent(segments[segments.length - 1]).trim();
+            }
+        } catch {
+            // Not a URL, fall back to the raw value below.
+        }
+
+        return rawValue.replace(/^.*\//, '').trim();
+    }, []);
+
+    const stopScanner = useCallback(() => {
+        scanningRef.current = false;
+
+        if (animationFrameRef.current) {
+            window.cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+        }
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+
+        setIsScannerOpen(false);
+        setIsCameraStarting(false);
+    }, []);
 
     useEffect(() => {
         return () => {
             if (pdfBlobUrl) {
                 window.URL.revokeObjectURL(pdfBlobUrl);
             }
+            stopScanner();
         };
-    }, [pdfBlobUrl]);
+    }, [pdfBlobUrl, stopScanner]);
 
-    const handleVerify = async (e) => {
-        e.preventDefault();
+    const performVerification = async (inputId) => {
+        const trimmedId = inputId.trim();
         
-        const trimmedId = certId.trim();
         if (!trimmedId) {
             setError("Please enter a Certificate ID.");
             return;
@@ -84,6 +137,86 @@ const VerifyPage = () => {
         }
     };
 
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        await performVerification(certId);
+    };
+
+    const startScanner = async () => {
+        setCameraError('');
+        setIsScannerOpen(true);
+        setIsCameraStarting(true);
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' }
+                },
+                audio: false
+            });
+
+            streamRef.current = stream;
+
+            if (!videoRef.current) {
+                throw new Error('Camera preview is not ready.');
+            }
+
+            videoRef.current.srcObject = stream;
+            await videoRef.current.play();
+
+            scanningRef.current = true;
+            setIsCameraStarting(false);
+
+            const scanFrame = () => {
+                if (!scanningRef.current || !videoRef.current || !canvasRef.current) {
+                    return;
+                }
+
+                const video = videoRef.current;
+                const canvas = canvasRef.current;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+
+                if (!context || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                    animationFrameRef.current = window.requestAnimationFrame(scanFrame);
+                    return;
+                }
+
+                const width = video.videoWidth;
+                const height = video.videoHeight;
+
+                if (!width || !height) {
+                    animationFrameRef.current = window.requestAnimationFrame(scanFrame);
+                    return;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(video, 0, 0, width, height);
+
+                const imageData = context.getImageData(0, 0, width, height);
+                const code = jsQR(imageData.data, width, height, {
+                    inversionAttempts: 'dontInvert'
+                });
+
+                if (code?.data) {
+                    const scannedValue = normalizeScannedCertificateId(code.data);
+                    setCertId(scannedValue);
+                    stopScanner();
+                    performVerification(scannedValue);
+                    return;
+                }
+
+                animationFrameRef.current = window.requestAnimationFrame(scanFrame);
+            };
+
+            animationFrameRef.current = window.requestAnimationFrame(scanFrame);
+        } catch (err) {
+            console.error('Camera error:', err);
+            stopScanner();
+            setCameraError('Camera access failed. Please allow camera permission or use manual entry.');
+        }
+    };
+
     return (
         <div className="auth-container">
             <button className="back-btn" onClick={() => navigate(-1)}>Back</button>
@@ -111,6 +244,40 @@ const VerifyPage = () => {
                                 {loading ? 'Checking...' : 'Verify Now'}
                             </button>
                         </form>
+
+                        <div className="scanner-actions">
+                            <button
+                                type="button"
+                                className="scan-btn"
+                                onClick={isScannerOpen ? stopScanner : startScanner}
+                                disabled={loading || isCameraStarting}
+                            >
+                                {isScannerOpen ? 'Close Camera' : (isCameraStarting ? 'Starting Camera...' : 'Scan QR with Camera')}
+                            </button>
+                            <p className="scanner-note">
+                                Point your camera at the QR code on the certificate to auto-fill the Certificate ID.
+                            </p>
+                        </div>
+
+                        {cameraError && <p className="camera-error">{cameraError}</p>}
+
+                        {isScannerOpen && (
+                            <div className="scanner-panel">
+                                <div className="scanner-frame">
+                                    <video ref={videoRef} className="scanner-video" playsInline muted />
+                                    <canvas ref={canvasRef} className="scanner-canvas" aria-hidden="true" />
+                                    <div className="scanner-overlay">
+                                        <span className="scanner-corner tl" />
+                                        <span className="scanner-corner tr" />
+                                        <span className="scanner-corner bl" />
+                                        <span className="scanner-corner br" />
+                                    </div>
+                                </div>
+                                <div className="scanner-status">
+                                    {isCameraStarting ? 'Requesting camera access...' : 'Scanning for QR code...'}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -138,7 +305,7 @@ const VerifyPage = () => {
                                     <span className="status-icon">✅</span>
                                     <div>
                                         <h3>Verified Successfully</h3>
-                                        <small>{result.certificate_id || formattedId}</small>
+                                        <small>{result.certificate_id || certId.trim().toUpperCase()}</small>
                                     </div>
                                 </div>
 

@@ -7,6 +7,7 @@ import './CSVUploadPage.css';
 
 const CSVUploadPage = () => {
   const navigate = useNavigate();
+  const ITEMS_PER_PAGE = 10;
   const [csvFile, setCsvFile] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [templates, setTemplates] = useState([]);
@@ -17,6 +18,7 @@ const CSVUploadPage = () => {
   const [csvWarnings, setCsvWarnings] = useState([]);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [confirmationModal, setConfirmationModal] = useState({ show: false, certCount: 0 });
+  const [currentCsvPage, setCurrentCsvPage] = useState(1);
 
   const fileInputRef = useRef(null);
 
@@ -47,6 +49,7 @@ const CSVUploadPage = () => {
         setCsvFile(selectedFile);
         setParsingCsv(true);
         setCsvWarnings([]);
+        setCurrentCsvPage(1);
         setMessage({ type: '', text: '' });
 
         Papa.parse(selectedFile, {
@@ -66,10 +69,12 @@ const CSVUploadPage = () => {
             if (headers.length === 0 || normalizedRows.length === 0) {
               setCsvHeaders([]);
               setCsvRows([]);
+              setCurrentCsvPage(1);
               setMessage({ type: 'error', text: 'CSV must include headers and at least one data row.' });
             } else {
               setCsvHeaders(headers);
               setCsvRows(normalizedRows);
+              setCurrentCsvPage(1);
               if (result.errors?.length) {
                 setCsvWarnings(result.errors.map((item) => `${item.code}: ${item.message}`));
               }
@@ -113,6 +118,13 @@ const CSVUploadPage = () => {
   const handleDeleteRow = (rowIndex) => {
     setCsvRows((prevRows) => prevRows.filter((_, index) => index !== rowIndex));
   };
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(csvRows.length / ITEMS_PER_PAGE));
+    if (currentCsvPage > totalPages) {
+      setCurrentCsvPage(totalPages);
+    }
+  }, [csvRows.length, currentCsvPage]);
 
   const handleConfirmGenerate = async () => {
     setConfirmationModal({ show: false, certCount: 0 });
@@ -215,11 +227,16 @@ const CSVUploadPage = () => {
     setCsvHeaders([]);
     setCsvRows([]);
     setCsvWarnings([]);
+    setCurrentCsvPage(1);
     setMessage({ type: '', text: '' });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  const totalCsvPages = Math.max(1, Math.ceil(csvRows.length / ITEMS_PER_PAGE));
+  const csvStartIndex = (currentCsvPage - 1) * ITEMS_PER_PAGE;
+  const paginatedCsvRows = csvRows.slice(csvStartIndex, csvStartIndex + ITEMS_PER_PAGE);
 
   return (
     <div className="upload-page-container">
@@ -315,31 +332,62 @@ const CSVUploadPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {csvRows.map((row, rowIndex) => (
-                      <tr key={`row-${rowIndex}`}>
-                        <td>{rowIndex + 1}</td>
-                        {csvHeaders.map((header) => (
-                          <td key={`${header}-${rowIndex}`}>
-                            <input
-                              type="text"
-                              value={row?.[header] ?? ''}
-                              onChange={(event) => handleCellChange(rowIndex, header, event.target.value)}
-                            />
+                    {paginatedCsvRows.map((row, rowOffset) => {
+                      const rowIndex = csvStartIndex + rowOffset;
+
+                      return (
+                        <tr key={`row-${rowIndex}`}>
+                          <td>{rowIndex + 1}</td>
+                          {csvHeaders.map((header) => (
+                            <td key={`${header}-${rowIndex}`}>
+                              <input
+                                type="text"
+                                value={row?.[header] ?? ''}
+                                onChange={(event) => handleCellChange(rowIndex, header, event.target.value)}
+                              />
+                            </td>
+                          ))}
+                          <td>
+                            <button
+                              type="button"
+                              className="btn-danger"
+                              onClick={() => handleDeleteRow(rowIndex)}
+                            >
+                              Delete
+                            </button>
                           </td>
-                        ))}
-                        <td>
-                          <button
-                            type="button"
-                            className="btn-danger"
-                            onClick={() => handleDeleteRow(rowIndex)}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="pagination-controls">
+                <span className="pagination-summary">
+                  Showing {csvRows.length === 0 ? 0 : csvStartIndex + 1}-{Math.min(csvStartIndex + ITEMS_PER_PAGE, csvRows.length)} of {csvRows.length}
+                </span>
+                <div className="pagination-buttons">
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    onClick={() => setCurrentCsvPage((page) => Math.max(1, page - 1))}
+                    disabled={currentCsvPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="pagination-page-indicator">
+                    Page {currentCsvPage} of {totalCsvPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    onClick={() => setCurrentCsvPage((page) => Math.min(totalCsvPages, page + 1))}
+                    disabled={currentCsvPage === totalCsvPages}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
 
               <button type="button" className="btn-add-row" onClick={handleAddRow}>

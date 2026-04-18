@@ -256,6 +256,50 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.pagination-summary,
+.pagination-page-indicator {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  border: 1px solid #0D1282;
+  background: #ffffff;
+  color: #0D1282;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #0D1282;
+  color: #ffffff;
+}
+
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 @media (max-width: 768px) {
   .student-container {
     flex-direction: column;
@@ -361,6 +405,27 @@ html, body {
   .student-table td {
     padding: 10px 8px;
   }
+
+  .pagination-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pagination-summary,
+  .pagination-page-indicator {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pagination-btn {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .student-header h1, .student-header p {
@@ -393,6 +458,25 @@ html, body {
   .save-btn {
     min-width: 60px;
     padding: 6px 10px;
+  }
+
+  .pagination-controls {
+    gap: 10px;
+  }
+
+  .pagination-buttons {
+    flex-direction: column;
+  }
+
+  .pagination-btn {
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .pagination-summary,
+  .pagination-page-indicator {
+    font-size: 0.8rem;
+    line-height: 1.35;
   }
 
   .preview-card {
