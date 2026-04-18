@@ -243,9 +243,6 @@ const VerifyPage = () => {
                             <button type="submit" className="verify-btn" disabled={loading}>
                                 {loading ? 'Checking...' : 'Verify Now'}
                             </button>
-                        </form>
-
-                        <div className="scanner-actions">
                             <button
                                 type="button"
                                 className="scan-btn"
@@ -257,6 +254,10 @@ const VerifyPage = () => {
                             <p className="scanner-note">
                                 Point your camera at the QR code on the certificate to auto-fill the Certificate ID.
                             </p>
+                        </form>
+
+                        <div className="scanner-actions">
+                            
                         </div>
 
                         {cameraError && <p className="camera-error">{cameraError}</p>}
@@ -285,7 +286,6 @@ const VerifyPage = () => {
                     <div className="result-container">
                         {!result && !error && (
                             <div className="empty-state">
-                                <div className="search-icon-placeholder">🔍</div>
                                 <p>Waiting for verification...</p>
                                 <span>Results will appear here.</span>
                             </div>

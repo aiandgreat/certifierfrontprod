@@ -41,7 +41,9 @@
     align-items: center;
     gap: 15px;
     margin-bottom: 20px;
+    margin-left: 50px;
 }
+
 
 .Logo { width: 80px; }
 
@@ -65,6 +67,7 @@
     border: none;
     font-size: 1rem;
     margin-bottom: 15px;
+    text-align: center;
 }
 
 .verify-btn {
@@ -87,6 +90,7 @@
 }
 
 .scan-btn {
+    margin-top: 20px;
     width: 100%;
     padding: 14px 16px;
     border: 1px solid rgba(240, 222, 54, 0.45);
@@ -209,7 +213,7 @@
     background: #fdfdfd;
     padding: 40px;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
     overflow-y: auto; /* Para sa mahabang results */
 }
@@ -285,7 +289,7 @@
 /* 7. OTHER STATES */
 .empty-state {
     text-align: center;
-    margin-top: 100px;
+    margin-top: 20px;
     color: #ccc;
 }
 

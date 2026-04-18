@@ -159,7 +159,7 @@ const LoginPage = () => {
                   placeholder="name@ua.edu.ph" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  pattern="^[A-Za-z0-9._%+-]+@ua\.edu\.ph$"
+                  pattern="^[A-Za-z0-9._%+-]+@ua\\.edu\\.ph$"
                   title="Use your school email ending with @ua.edu.ph"
                   required 
                 />

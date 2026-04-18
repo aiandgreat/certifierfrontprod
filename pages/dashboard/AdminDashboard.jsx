@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import JSZip from 'jszip';
 import './AdminDashboard.css';
+import PlaceholderImg from '../../src/assets/hero.png';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const AdminDashboard = () => {
   // UI States
   const [modal, setModal] = useState({ show: false, type: '', title: '', message: '', onConfirm: null });
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [assignModal, setAssignModal] = useState({ show: false, certId: null, owner: '' });
+  const [assigningCertId, setAssigningCertId] = useState(null);
   const [userSearch, setUserSearch] = useState('');
   const [templateSearch, setTemplateSearch] = useState('');
   const [issuanceSearch, setIssuanceSearch] = useState('');
@@ -74,9 +77,9 @@ const AdminDashboard = () => {
   };
 
   const getFullUrl = (path) => {
-    if (!path) return "https://via.placeholder.com/200x140?text=No+Image";
-    if (path.startsWith('http')) return path;
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    if (!path) return PlaceholderImg;
+    if (typeof path === 'string' && path.startsWith('http')) return path;
+    const cleanPath = String(path).startsWith('/') ? String(path).substring(1) : String(path);
     return `${API_BASE}/${cleanPath}`;
   };
 
@@ -197,6 +200,27 @@ const AdminDashboard = () => {
       }
     });
   };
+
+    const openAssignModal = (cert) => {
+      setAssignModal({ show: true, certId: cert.id, owner: getOwnerId(cert) });
+    };
+
+    const handleAssignConfirm = async () => {
+      if (!assignModal.certId) return;
+      setAssigningCertId(assignModal.certId);
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        await axios.patch(`${API_BASE}/api/certificates/${assignModal.certId}/`, { owner: assignModal.owner || null }, { headers });
+        showToast('Certificate assigned successfully!');
+        setAssignModal({ show: false, certId: null, owner: '' });
+        fetchData();
+      } catch (err) {
+        console.error('Assign error', err);
+        showToast('Failed to assign certificate');
+      } finally {
+        setAssigningCertId(null);
+      }
+    };
 
   const closeMobileNav = () => setIsMobileNavOpen(false);
 
@@ -396,6 +420,29 @@ const AdminDashboard = () => {
           <div className="admin-stat-card"><h3>{stats.uploads}</h3><p>Bulk Uploads</p></div>
         </section>
 
+
+      {assignModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Assign Certificate</h2>
+            <p>Select an owner for this certificate.</p>
+            <div style={{ margin: '12px 0' }}>
+              <select className="edit-input" value={assignModal.owner} onChange={(e) => setAssignModal({ ...assignModal, owner: e.target.value })}>
+                <option value="">Unassigned</option>
+                {users.map((user) => (
+                  <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setAssignModal({ show: false, certId: null, owner: '' })}>Cancel</button>
+              <button className="save-btn" onClick={handleAssignConfirm} disabled={assigningCertId === assignModal.certId}>
+                {assigningCertId === assignModal.certId ? 'Assigning...' : 'Assign'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         <section className="admin-table-container">
           <div className="table-header">
             <h3>Registered Users</h3>
@@ -471,7 +518,11 @@ const AdminDashboard = () => {
               {paginatedTemplates.map((template) => (
                 <div key={template.id} className="template-card">
                   <div className="template-preview">
-                    <img src={getFullUrl(template.background)} alt={template.name} onError={(e) => e.target.src = "https://via.placeholder.com/200x140?text=Error+Loading"} />
+                    <img
+                      src={getFullUrl(template.background)}
+                      alt={template.name}
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }}
+                    />
                   </div>
                   <div className="template-info">
                     <h4>{template.name}</h4>
@@ -591,6 +642,7 @@ const AdminDashboard = () => {
                           <>
                             <button className="edit-btn" onClick={() => { setEditingCert(cert.id); setEditFormData({ full_name: cert.full_name, course: cert.course, owner: getOwnerId(cert) }) }}>Reissue Certificate</button>
                             <button className="view-file-btn" onClick={() => downloadSinglePDF(cert)} disabled={downloadingCerts}>Download</button>
+                            <button className="assign-btn" onClick={() => openAssignModal(cert)}>Assign</button>
                             <button className="delete-btn" onClick={() => handleDelete(cert.id, 'cert')}>Delete</button>
                           </>
                         )}

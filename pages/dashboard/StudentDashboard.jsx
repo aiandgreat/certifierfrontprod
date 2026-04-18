@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './StudentDashboard.css';
@@ -12,6 +12,7 @@ const StudentDashboard = () => {
   const [myCerts, setMyCerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
+  const previewUrlRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const token = localStorage.getItem('token');
@@ -73,10 +74,23 @@ const StudentDashboard = () => {
 
       const file = new Blob([res.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(file);
+      // Revoke any previous preview URL to avoid memory leaks
+      if (previewUrlRef.current) {
+        try { window.URL.revokeObjectURL(previewUrlRef.current); } catch (e) {}
+      }
+      previewUrlRef.current = url;
       setPreviewPdfUrl(url);
     } catch {
       alert("Preview failed");
     }
+  };
+
+  const closePreview = () => {
+    if (previewUrlRef.current) {
+      try { window.URL.revokeObjectURL(previewUrlRef.current); } catch (e) {}
+      previewUrlRef.current = null;
+    }
+    setPreviewPdfUrl(null);
   };
 
   const handleDownload = async (cert) => {
@@ -246,13 +260,15 @@ const StudentDashboard = () => {
 
       {/* MODAL */}
       {previewPdfUrl && (
-        <div className="preview-overlay" onClick={() => setPreviewPdfUrl(null)}>
+        <div className="preview-overlay" onClick={closePreview}>
           <div className="preview-card" onClick={(e) => e.stopPropagation()}>
-            <button className="close-preview-x" onClick={() => setPreviewPdfUrl(null)}>
+            <button className="close-preview-x" onClick={closePreview}>
               &times;
             </button>
 
-            <iframe src={previewPdfUrl} className="preview-frame" title="Preview" />
+            <object data={previewPdfUrl} type="application/pdf" className="preview-frame">
+              <p style={{ padding: 20 }}>Preview not available. <a href={previewPdfUrl} target="_blank" rel="noreferrer">Open in a new tab</a></p>
+            </object>
             <div className="preview-info">Certificate Preview</div>
           </div>
         </div>

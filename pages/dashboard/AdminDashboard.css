@@ -191,30 +191,59 @@
   justify-content: center;
   align-items: center;
 }
-
 .edit-btn,
-.delete-btn,
 .save-btn,
-.cancel-btn {
-  padding: 4px 8px;
-  font-size: 0.65rem;
-  border-radius: 4px;
-  font-weight: 600;
-  min-width: 55px;
-  height: 28px;
+.cancel-btn,
+.delete-btn,
+.view-file-btn,
+.assign-btn,
+.delete-btn-sm,
+.logout-btn,
+.pagination-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  font-weight: 700;
+  min-width: 72px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   text-transform: uppercase;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.08s ease;
+  border: 1px solid transparent;
+  background: #ffffff;
+  color: #0D1282;
 }
 
-.edit-btn { background: transparent; border: 1.2px solid #0D1282; color: #0D1282; }
-.edit-btn:hover { background: #0D1282; color: #EEEDED; }
-.save-btn { background-color: #10b981; color: white; border: none; }
-.cancel-btn { background-color: #D71313; color: white; border: none; }
-.delete-btn { background-color: transparent; border: 1.2px solid #D71313; color: #D71313; }
-.delete-btn:hover { background-color: #D71313; color: #EEEDED; }
+/* Primary / action variants */
+.assign-btn { background: #0D1282; color: #fff; border-color: #0D1282; }
+.assign-btn:hover { background: #0b0f6b; }
+.save-btn { background: #10b981; color: #fff; border-color: #10b981; }
+.save-btn:hover { background: #0ea06b; }
+
+/* Destructive / cancel */
+.cancel-btn { background: #D71313; color: #fff; border-color: #D71313; }
+.cancel-btn:hover { background: #b00f0f; }
+.delete-btn { background: transparent; border-color: #D71313; color: #D71313; }
+.delete-btn:hover { background: #D71313; color: #fff; }
+
+/* Secondary / outline */
+.edit-btn, .view-file-btn { background: transparent; border-color: #0D1282; color: #0D1282; }
+.edit-btn:hover, .view-file-btn:hover { background: #0D1282; color: #EEEDED; }
+
+/* Small/full-width variant used in template cards */
+.delete-btn-sm {
+  width: 100%;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #D71313;
+  color: #D71313;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.delete-btn-sm:hover { background: #D71313; color: #fff; }
 
 .badge {
   padding: 4px 8px;
@@ -438,21 +467,7 @@
   }
 }
 
-.view-file-btn {
-  background: transparent;
-  border: 1px solid #0D1282;
-  color: #0D1282;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.view-file-btn:hover {
-  background: #0D1282;
-  color: white;
-}
+/* view-file-btn styling unified with other action buttons above */
 
 /* DELETE SUCCESS TOAST */
 
@@ -669,21 +684,7 @@
   color: #333;
 }
 
-.delete-btn-sm {
-  width: 100%;
-  padding: 6px;
-  background: #fff5f5;
-  color: #e03131;
-  border: 1px solid #ffc9c9;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.delete-btn-sm:hover {
-  background: #fae5e5;
-}
+/* small delete button in template cards is styled above under .delete-btn-sm */
 
 .masked-pass {
   color: #bbb;
@@ -762,22 +763,7 @@
   text-overflow: ellipsis;
 }
 
-.delete-btn-sm {
-  width: 100%;
-  padding: 6px;
-  background: white;
-  border: 1px solid #D71313;
-  color: #D71313;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.delete-btn-sm:hover {
-  background: #D71313;
-  color: white;
-}
+/* duplicate delete-btn-sm removed; unified styles are defined above */
 
 .no-data {
   text-align: center;
