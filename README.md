@@ -5,5 +5,7 @@ Furthermore, the study is highly significant for the students and the integrity 
 
 Frontend Setup instructions:
 cd certifierfrontprod
+
 npm install
+
 npm run dev
