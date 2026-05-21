@@ -18,6 +18,8 @@ const DEFAULT_MARKER_STYLE = {
   align: 'center'
 };
 
+const QR_PLACEHOLDER_KEY = 'qr_code';
+
 const UploadTemplatePage = () => {
   const navigate = useNavigate(); // Idinagdag ito
   const [file, setFile] = useState(null);
@@ -51,6 +53,8 @@ const UploadTemplatePage = () => {
   const getPlaceholderMeta = (key) => {
     return PLACEHOLDER_OPTIONS.find((option) => option.key === key) || PLACEHOLDER_OPTIONS[0];
   };
+
+  const isQrPlaceholder = (key) => key === QR_PLACEHOLDER_KEY;
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -108,7 +112,7 @@ const UploadTemplatePage = () => {
         fontSize: outputFontSize,
         previewFontSize,
         color: style.color,
-        align: style.align
+        align: isQrPlaceholder(placeholder.key) ? 'center' : style.align
       };
       if (!existing) {
         return prev.concat(nextMarker);
@@ -164,6 +168,9 @@ const UploadTemplatePage = () => {
   };
 
   const handleStyleChange = (field, value) => {
+    if (field === 'align' && isQrPlaceholder(activePlaceholderKey)) {
+      return;
+    }
     setPlaceholderStyles((prev) => {
       const nextStyle = {
         ...(prev[activePlaceholderKey] || DEFAULT_MARKER_STYLE),
@@ -175,6 +182,7 @@ const UploadTemplatePage = () => {
         return {
           ...marker,
           ...nextStyle,
+          align: isQrPlaceholder(marker.key) ? 'center' : nextStyle.align,
           previewFontSize: nextStyle.fontSize,
           fontSize: toOutputFontSize(nextStyle.fontSize)
         };
@@ -318,10 +326,11 @@ const UploadTemplatePage = () => {
                   <select
                     value={placeholderStyles[activePlaceholderKey]?.align || 'center'}
                     onChange={(e) => handleStyleChange('align', e.target.value)}
+                    disabled={isQrPlaceholder(activePlaceholderKey)}
                   >
-                    <option value="left">Right</option>
+                    <option value="left">Left</option>
                     <option value="center">Center</option>
-                    <option value="right">Left</option>
+                    <option value="right">Right</option>
                   </select>
                 </label>
               </div>
@@ -335,25 +344,41 @@ const UploadTemplatePage = () => {
               >
                 <img ref={previewImageRef} src={previewUrl} alt="Template preview" draggable={false} onLoad={handlePreviewLoad} />
                 {markers.map((marker) => {
-                  const horizontalTransform = marker.align === 'center' ? 'translate(-50%, -50%)' : marker.align === 'left' ? 'translate(0, -50%)' : 'translate(-100%, -50%)';
-                  const justifyContent = marker.align === 'center' ? 'center' : marker.align === 'left' ? 'flex-start' : 'flex-end';
+                  const markerIsQr = isQrPlaceholder(marker.key);
+                  const horizontalTransform = markerIsQr
+                    ? 'translate(-50%, -50%)'
+                    : marker.align === 'center'
+                      ? 'translate(-50%, -50%)'
+                      : marker.align === 'left'
+                        ? 'translate(0, -50%)'
+                        : 'translate(-100%, -50%)';
+                  const justifyContent = markerIsQr
+                    ? 'center'
+                    : marker.align === 'center'
+                      ? 'center'
+                      : marker.align === 'left'
+                        ? 'flex-start'
+                        : 'flex-end';
+                  const markerSize = marker.previewFontSize ?? marker.fontSize;
                   return (
                     <button
                       key={marker.id}
                       type="button"
-                      className="template-marker"
+                      className={markerIsQr ? 'template-marker qr-marker' : 'template-marker'}
                       style={{
                         left: `${marker.xPct}%`,
                         top: `${marker.yPct}%`,
                         transform: horizontalTransform,
-                        fontSize: `${marker.previewFontSize ?? marker.fontSize}px`,
+                        fontSize: markerIsQr ? `${Math.max(10, Math.round(markerSize * 0.3))}px` : `${markerSize}px`,
+                        width: markerIsQr ? `${markerSize}px` : undefined,
+                        height: markerIsQr ? `${markerSize}px` : undefined,
                         color: marker.color,
-                        textAlign: marker.align,
+                        textAlign: markerIsQr ? 'center' : marker.align,
                         justifyContent: justifyContent
                       }}
                       onPointerDown={(e) => handleMarkerPointerDown(e, marker.id)}
                     >
-                      {`{{${marker.key}}}`}
+                      {markerIsQr ? 'QR' : `{{${marker.key}}}`}
                     </button>
                   );
                 })}

@@ -174,6 +174,15 @@ html, body {
   white-space: nowrap;
 }
 
+.template-marker.qr-marker {
+  padding: 0;
+  border: 2px dashed rgba(13, 18, 130, 0.8);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+  white-space: normal;
+  line-height: 1;
+}
+
 .marker-list {
   margin-top: 12px;
 }
