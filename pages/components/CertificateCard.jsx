@@ -37,7 +37,7 @@ const CertificateCard = ({ cert }) => {
       // Create temporary link to trigger download
       const link = document.createElement('a');
       link.href = fileURL;
-      link.setAttribute('download', `Cert_${cert.certificate_id}.pdf`);
+      link.setAttribute('download', `${cert.certificate_id}.pdf`);
       document.body.appendChild(link);
       link.click();
       

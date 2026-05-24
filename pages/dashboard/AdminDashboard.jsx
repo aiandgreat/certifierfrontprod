@@ -27,8 +27,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   // States para sa Editing
-  const [editingCert, setEditingCert] = useState(null);
-  const [editFormData, setEditFormData] = useState({ full_name: '', course: '', owner: '' });
   const [editingUser, setEditingUser] = useState(null);
   const [editUserFormData, setEditUserFormData] = useState({
     first_name: '', last_name: '', email: '', username: '', role: ''
@@ -37,6 +35,7 @@ const AdminDashboard = () => {
   // UI States
   const [modal, setModal] = useState({ show: false, type: '', title: '', message: '', onConfirm: null });
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [reissueModal, setReissueModal] = useState({ show: false, cert: null, full_name: '', course: '', owner: '' });
   const [assignModal, setAssignModal] = useState({ show: false, certId: null, owner: '' });
   const [assigningCertId, setAssigningCertId] = useState(null);
   const [userSearch, setUserSearch] = useState('');
@@ -180,28 +179,29 @@ const AdminDashboard = () => {
     template.name.toLowerCase().includes(templateSearch.toLowerCase())
   );
 
-  const handleSaveReissue = async (cert) => {
-    setReissuingCertId(cert.id);
+  const handleSaveReissue = async () => {
+    if (!reissueModal.cert) return;
+    setReissuingCertId(reissueModal.cert.id);
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const payload = {
-        full_name: editFormData.full_name,
-        course: editFormData.course,
-        owner: editFormData.owner || null,
-        issued_by: cert.issued_by,
-        date_issued: cert.date_issued,
-        title: cert.title,
-        template: getTemplateId(cert)
+        full_name: reissueModal.full_name,
+        course: reissueModal.course,
+        owner: reissueModal.owner || null,
+        issued_by: reissueModal.cert.issued_by,
+        date_issued: reissueModal.cert.date_issued,
+        title: reissueModal.cert.title,
+        template: getTemplateId(reissueModal.cert)
       };
 
       try {
-        await axios.post(`${API_BASE}/api/certificates/${cert.id}/reissue/`, payload, { headers });
+        await axios.post(`${API_BASE}/api/certificates/${reissueModal.cert.id}/reissue/`, payload, { headers });
       } catch (error) {
         if (error?.response?.status !== 404) throw error;
         await axios.post(`${API_BASE}/api/certificates/`, payload, { headers });
       }
 
-      setEditingCert(null);
+      setReissueModal({ show: false, cert: null, full_name: '', course: '', owner: '' });
       showToast('Certificate reissued successfully!');
       fetchData();
     } catch (err) {
@@ -330,10 +330,11 @@ const AdminDashboard = () => {
 
   const handleHeaderReissue = () => {
     if (!selectedRecentCert) return;
-    setEditingCert(selectedRecentCert.id);
-    setEditFormData({
-      full_name: selectedRecentCert.full_name,
-      course: selectedRecentCert.course,
+    setReissueModal({
+      show: true,
+      cert: selectedRecentCert,
+      full_name: selectedRecentCert.full_name || '',
+      course: selectedRecentCert.course || '',
       owner: getOwnerId(selectedRecentCert)
     });
   };
@@ -388,7 +389,7 @@ const AdminDashboard = () => {
       const fileURL = window.URL.createObjectURL(file);
       const link = document.createElement('a');
       link.href = fileURL;
-      link.setAttribute('download', `Cert_${cert.certificate_id}.pdf`);
+      link.setAttribute('download', `${cert.certificate_id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -417,7 +418,7 @@ const AdminDashboard = () => {
             headers: { Authorization: `Bearer ${token}` },
             responseType: 'blob'
           });
-          zip.file(`Cert_${cert.certificate_id}.pdf`, response.data);
+          zip.file(`${cert.certificate_id}.pdf`, response.data);
         })
       );
       const zipBlob = await zip.generateAsync({ type: 'blob' });
@@ -633,9 +634,9 @@ const AdminDashboard = () => {
 
             {assignModal.show && (
               <div className="modal-overlay">
-                <div className="modal-content">
+                <form className="modal-content assign-modal" onSubmit={(e) => { e.preventDefault(); handleAssignConfirm(); }}>
                   <h2>Assign Certificate</h2>
-                  <p>Select an owner for this certificate.</p>
+                  <p>Select an owner, then save the assignment.</p>
                   <div style={{ margin: '12px 0' }}>
                     <select className="edit-input" value={assignModal.owner} onChange={(e) => setAssignModal({ ...assignModal, owner: e.target.value })}>
                       <option value="">Unassigned</option>
@@ -643,10 +644,41 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   <div className="modal-actions">
-                    <button className="cancel-btn" onClick={() => setAssignModal({ show: false, certId: null, owner: '' })}>Cancel</button>
-                    <button className="save-btn" onClick={handleAssignConfirm} disabled={assigningCertId === assignModal.certId}>{assigningCertId === assignModal.certId ? 'Assigning...' : 'Assign'}</button>
+                    <button type="button" className="cancel-btn" onClick={() => setAssignModal({ show: false, certId: null, owner: '' })}>Cancel</button>
+                    <button type="submit" className="save-btn" disabled={assigningCertId === assignModal.certId}>{assigningCertId === assignModal.certId ? 'Saving...' : 'Save Assignment'}</button>
                   </div>
-                </div>
+                </form>
+              </div>
+            )}
+
+            {reissueModal.show && reissueModal.cert && (
+              <div className="modal-overlay">
+                <form className="modal-content reissue-modal" onSubmit={(e) => { e.preventDefault(); handleSaveReissue(); }}>
+                  <h2>Reissue Certificate</h2>
+                  <p>Review the updated details, then save the reissue.</p>
+                  <div style={{ display: 'grid', gap: '12px', margin: '12px 0' }}>
+                    <input
+                      className="edit-input"
+                      value={reissueModal.full_name}
+                      onChange={(e) => setReissueModal({ ...reissueModal, full_name: e.target.value })}
+                      placeholder="Recipient name"
+                    />
+                    <input
+                      className="edit-input"
+                      value={reissueModal.course}
+                      onChange={(e) => setReissueModal({ ...reissueModal, course: e.target.value })}
+                      placeholder="Course"
+                    />
+                    <select className="edit-input" value={reissueModal.owner} onChange={(e) => setReissueModal({ ...reissueModal, owner: e.target.value })}>
+                      <option value="">Unassigned</option>
+                      {users.map((user) => <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>)}
+                    </select>
+                  </div>
+                  <div className="modal-actions">
+                    <button type="button" className="cancel-btn" onClick={() => setReissueModal({ show: false, cert: null, full_name: '', course: '', owner: '' })}>Cancel</button>
+                    <button type="submit" className="save-btn" disabled={reissuingCertId === reissueModal.cert.id}>{reissuingCertId === reissueModal.cert.id ? 'Saving...' : 'Save Reissue'}</button>
+                  </div>
+                </form>
               </div>
             )}
 
@@ -719,7 +751,7 @@ const AdminDashboard = () => {
                   <div className="templates-grid">
                     {paginatedTemplates.map((template) => (
                       <div key={template.id} className="template-card">
-                        <div className="template-preview"><img src={getFullUrl(template.background)} alt={template.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }} /></div>
+                        <div className="template-preview1"><img src={getFullUrl(template.background)} alt={template.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }} /></div>
                         <div className="template-info"><h4>{template.name}</h4><button className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button></div>
                       </div>
                     ))}
@@ -807,9 +839,9 @@ const AdminDashboard = () => {
                       >
                         <td style={{ width: '40px', textAlign: 'center' }}><input type="checkbox" checked={selectedCerts.has(cert.id)} onChange={() => { toggleCertSelect(cert.id); setActiveRecentCertId(cert.id); }} /></td>
                         <td>#{cert.certificate_id?.toUpperCase()}</td>
-                        <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.full_name} onChange={e => setEditFormData({ ...editFormData, full_name: e.target.value })} /> : cert.full_name}</td>
-                        <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.course} onChange={e => setEditFormData({ ...editFormData, course: e.target.value })} /> : cert.course}</td>
-                        <td>{editingCert === cert.id ? (<select className="edit-input" value={editFormData.owner} onChange={e => setEditFormData({ ...editFormData, owner: e.target.value })}><option value="">Unassigned</option>{users.map((user) => <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>)}</select>) : getOwnerDisplay(cert)}</td>
+                        <td>{cert.full_name}</td>
+                        <td>{cert.course}</td>
+                        <td>{getOwnerDisplay(cert)}</td>
                       </tr>
                     ))}
                   </tbody>

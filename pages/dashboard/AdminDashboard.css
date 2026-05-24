@@ -1014,36 +1014,192 @@
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: modalFadeIn 0.18s ease-out both;
 }
 
 .modal-content {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  text-align: center;
-  width: 300px;
+  width: min(92vw, 440px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  border: 1px solid rgba(13, 18, 130, 0.08);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.28);
+  border-radius: 20px;
+  text-align: left;
+  padding: 26px 24px 22px;
+  transform-origin: center;
+  animation: modalPopIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.preview-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
+.modal-content.assign-modal {
+  border-top: 5px solid #0D1282;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.99), rgba(238, 242, 255, 0.99));
+}
+
+.modal-content.reissue-modal {
+  border-top: 5px solid #F0DE36;
+  background: linear-gradient(180deg, rgba(255, 253, 231, 0.99), rgba(255, 248, 196, 0.99));
+}
+
+.modal-content h2 {
+  margin: 0 0 10px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.modal-content.assign-modal h2 {
+  color: #0D1282;
+}
+
+.modal-content.reissue-modal h2 {
+  color: #a16207;
+}
+
+.modal-content p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-content .edit-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #dbe3f0;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.modal-content .edit-input:focus {
+  transform: translateY(-1px);
+}
+
+.modal-content.assign-modal .edit-input:focus {
+  border-color: #0D1282;
+  box-shadow: 0 0 0 4px rgba(13, 18, 130, 0.1);
+}
+
+.modal-content.reissue-modal .edit-input:focus {
+  border-color: #F0DE36;
+  box-shadow: 0 0 0 4px rgba(240, 222, 54, 0.18);
+}
+
+.modal-content .modal-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.modal-content .cancel-btn,
+.modal-content .save-btn {
+  min-width: 132px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  font-family: inherit;
+  box-shadow: 0 10px 18px rgba(13, 18, 130, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.modal-content.assign-modal .save-btn {
+  background: linear-gradient(135deg, #0D1282, #1d4ed8);
+  border-color: #0D1282;
+  color: #ffffff;
+}
+
+.modal-content.assign-modal .save-btn:hover {
+  background: linear-gradient(135deg, #0b0f6b, #1e40af);
+  border-color: #0b0f6b;
+}
+
+.modal-content.assign-modal .cancel-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.modal-content.assign-modal .cancel-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0D1282;
+}
+
+.modal-content.reissue-modal .save-btn {
+  background: linear-gradient(135deg, #F0DE36, #f59e0b);
+  border-color: #d4a90f;
+  color: #0f172a;
+}
+
+.modal-content.reissue-modal .save-btn:hover {
+  background: linear-gradient(135deg, #e0ca26, #d97706);
+  border-color: #c99a08;
+}
+
+.modal-content.reissue-modal .cancel-btn {
+  background: #ffffff;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.modal-content.reissue-modal .cancel-btn:hover {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #a16207;
+}
+
+.modal-content .cancel-btn:hover,
+.modal-content .save-btn:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 16px 28px rgba(13, 18, 130, 0.16);
+  filter: saturate(1.05);
+}
+
+.modal-content .cancel-btn:active,
+.modal-content .save-btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.modal-content .cancel-btn:focus-visible,
+.modal-content .save-btn:focus-visible {
+  outline: 3px solid rgba(240, 222, 54, 0.35);
+  outline-offset: 2px;
+}
+
+.modal-content .save-btn,
+.modal-content .cancel-btn {
+  font-size: 0.92rem;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .preview-card {
@@ -1567,6 +1723,25 @@
   text-align: center;
 }
 
+.template-preview1 {
+  position: relative;
+  width: auto;
+  height: 10.1rem;
+  background: #f1f5f9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  cursor: crosshair;
+  border: 2px solid #e2e8f0;
+}
+
+.template-preview1 img {
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+}
+
 .template-info h4 {
   font-size: 0.9rem;
   margin-bottom: 10px;
@@ -1581,7 +1756,7 @@
   font-size: 0.8rem;
 }
 
-.modal-actions {
+.modal-content .modal-actions {
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -1590,6 +1765,28 @@
 
 .edit-input {
   text-align: center;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Animation para sa pagpasok ng Toast */
@@ -1815,11 +2012,7 @@
   left: 50%;
   transform: translate(-50%, -8px);
   bottom: 100%;
-  background: rgba(2, 6, 23, 0.9);
-  color: #fff;
   padding: 6px 8px;
   font-size: 0.8rem;
-  border-radius: 6px;
   white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
 }

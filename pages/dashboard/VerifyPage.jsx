@@ -314,7 +314,7 @@ const VerifyPage = () => {
                                                 View Full Document
                                             </a>
                                             {pdfBlobUrl && (
-                                                <a href={pdfBlobUrl} download={`Verified_${result.certificate_id}.pdf`} className="action-btn-link download">
+                                                <a href={pdfBlobUrl} download={`${result.certificate_id}.pdf`} className="action-btn-link download">
                                                     <Download size={18} />
                                                     Download PDF
                                                 </a>

@@ -442,6 +442,13 @@ html, body, #root {
 }
 
 @media (max-width: 900px) {
+  html, body, #root {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   .auth-split-wrapper {
     flex-direction: column;
     height: auto; 
@@ -453,6 +460,7 @@ html, body, #root {
     position: relative; /* Release fixed position for mobile scrolling */
     height: auto !important;
     min-height: 100vh;
+    overflow-x: hidden;
     overflow-y: auto;
   }
 
@@ -475,6 +483,7 @@ html, body, #root {
     height: auto;
     min-height: 65vh;
     padding: 40px 0;
+    overflow-y: visible;
   }
 
   .LogoLogin {
@@ -491,6 +500,23 @@ html, body, #root {
     left: 16px;
     padding: 8px 16px;
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  html, body, #root {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .auth-container {
+    overflow-y: auto;
+  }
+
+  .auth-split-wrapper {
+    overflow-y: visible;
   }
 }
 

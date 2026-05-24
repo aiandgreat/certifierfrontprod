@@ -71,7 +71,8 @@
 
 .template-preview {
   position: relative;
-  width: 100%;
+  width: auto;
+  height: auto;
   background: #f1f5f9;
   border-radius: 12px;
   overflow: hidden;
@@ -107,12 +108,15 @@
 }
 
 .template-marker.qr-marker {
+  font-weight: 700;
   padding: 0;
-  border: 2px dashed rgba(13, 18, 130, 0.8);
-  background: rgba(255, 255, 255, 0.55);
+  border-style: dashed;
   border-radius: 10px;
-  white-space: normal;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
   line-height: 1;
+  white-space: normal;
 }
 
 .marker-list {
