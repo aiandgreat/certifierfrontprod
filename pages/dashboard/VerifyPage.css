@@ -1,350 +1,268 @@
-/* 1. BASE CONTAINER */
-.auth-container {
-    min-height: 100vh;
+/* VerifyPage.css - Professional Refinement */
+
+.verify-card {
+    max-width: 800px !important; /* Allow more width for verification results */
+}
+
+/* 1. Action Row (Verify + Scan) */
+.verify-actions-row {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(at 0% 0%, rgba(13, 18, 130, 0.3) 0px, transparent 50%), 
-                #050724;
-    padding: 20px;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* 2. MAIN WRAPPER */
-.auth-split-wrapper.glass-effect {
-    display: flex;
-    width: 100%;
-    max-width: 1200px; /* Nilakihan para sa PDF */
-    min-height: 700px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* 3. LEFT SIDE (FORM) */
-.verify-left {
-    flex: 0.8;
-    background: linear-gradient(135deg, #0D1282 0%, #090c5c 100%);
-    color: white;
-    padding: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-right: 5px solid #F0DE36;
-}
-
-.Logo-Container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    margin-left: 50px;
-}
-
-
-.Logo { width: 80px; }
-
-/* Make logo slightly larger on wider screens while keeping current mobile size */
-@media (min-width: 1200px) {
-    .Logo { width: 100px; }
-}
-
-.verify-left h1 {
-    color: #F0DE36;
-    font-size: 2rem;
-    font-weight: 800;
-}
-
-.verify-input {
-    width: 100%;
-    padding: 15px;
-    border-radius: 10px;
-    background: white;
-    color: black;
-    border: none;
-    font-size: 1rem;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.verify-btn {
-    width: 100%;
-    padding: 15px;
-    background: #F0DE36;
-    color: #0D1282;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-}
-
-.scanner-actions {
-    margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.scan-btn {
-    margin-top: 20px;
-    width: 100%;
-    padding: 14px 16px;
-    border: 1px solid rgba(240, 222, 54, 0.45);
-    border-radius: 10px;
-    background: rgba(240, 222, 54, 0.12);
-    color: #F0DE36;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.scan-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    background: rgba(240, 222, 54, 0.2);
-}
-
-.scan-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
-.scanner-note {
-    margin: 0;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: rgba(255, 255, 255, 0.75);
-}
-
-.camera-error {
+    gap: 16px;
     margin-top: 10px;
-    color: #ffb4b4;
-    font-size: 0.9rem;
 }
 
-.scanner-panel {
-    margin-top: 18px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 18px;
-    padding: 14px;
+.verify-actions-row .auth-submit {
+    flex: 1.5;
+    margin-top: 0;
+}
+
+.scan-trigger-btn {
+    flex: 1;
+    height: 54px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 2. Scanner Panel */
+.scanner-panel-wrapper {
+    margin-top: 32px;
+    background: #f1f5f9;
+    border-radius: 24px;
+    padding: 24px;
+    border: 2px dashed #cbd5e1;
+    animation: fadeIn 0.4s ease;
 }
 
 .scanner-frame {
     position: relative;
     width: 100%;
-    border-radius: 14px;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 20px;
     overflow: hidden;
+    aspect-ratio: 4/3;
     background: #000;
-    aspect-ratio: 4 / 3;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.scanner-video,
-.scanner-canvas {
+.scanner-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
 }
 
 .scanner-canvas {
     display: none;
 }
 
-.scanner-overlay {
+.scanner-overlay-grid {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    border-radius: 14px;
 }
 
-.scanner-corner {
+.scan-corner {
     position: absolute;
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     border-color: #F0DE36;
     border-style: solid;
     border-width: 0;
 }
 
-.scanner-corner.tl {
-    top: 12px;
-    left: 12px;
-    border-top-width: 4px;
-    border-left-width: 4px;
-}
+.scan-corner.tl { top: 20px; left: 20px; border-top-width: 6px; border-left-width: 6px; border-top-left-radius: 12px; }
+.scan-corner.tr { top: 20px; right: 20px; border-top-width: 6px; border-right-width: 6px; border-top-right-radius: 12px; }
+.scan-corner.bl { bottom: 20px; left: 20px; border-bottom-width: 6px; border-left-width: 6px; border-bottom-left-radius: 12px; }
+.scan-corner.br { bottom: 20px; right: 20px; border-bottom-width: 6px; border-right-width: 6px; border-bottom-right-radius: 12px; }
 
-.scanner-corner.tr {
-    top: 12px;
-    right: 12px;
-    border-top-width: 4px;
-    border-right-width: 4px;
-}
-
-.scanner-corner.bl {
-    bottom: 12px;
-    left: 12px;
-    border-bottom-width: 4px;
-    border-left-width: 4px;
-}
-
-.scanner-corner.br {
-    bottom: 12px;
-    right: 12px;
-    border-bottom-width: 4px;
-    border-right-width: 4px;
-}
-
-.scanner-status {
-    margin-top: 10px;
-    color: #F0DE36;
-    font-size: 0.88rem;
-    font-weight: 700;
+.scanner-status-text {
     text-align: center;
+    margin-top: 16px;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-/* 4. RIGHT SIDE (RESULTS & PDF) */
-.verify-right {
-    flex: 1.2;
-    background: #fdfdfd;
-    padding: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow-y: auto; /* Para sa mahabang results */
-}
-
-.result-container { width: 100%; }
-
-.result-box.valid {
-    animation: slideUp 0.5s ease;
-}
-
-/* 5. PDF PREVIEW STYLING */
-.pdf-preview-wrapper {
+/* 3. Results Display */
+.results-display-area {
+    margin-top: 40px;
     width: 100%;
-    background: #eee;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    border: 1px solid #ddd;
+}
+
+.result-box-success {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.success-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.success-header h3 {
+    font-size: 1.5rem;
+    color: #0f172a;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.success-header code {
+    color: #0D1282;
+    background: #eef2ff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* 4. Details Grid */
+.verification-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.detail-item p {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.status-badge-valid {
+    display: inline-flex;
+    background: #dcfce7;
+    color: #166534;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+/* 5. Preview & Actions */
+.preview-action-row {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.pdf-mini-preview {
+    width: 100%;
+    height: 50vh;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
     overflow: hidden;
 }
 
-.pdf-iframe {
+.pdf-mini-preview iframe {
     width: 100%;
-    height: 400px;
+    height: 100%;
     border: none;
 }
 
-.fullscreen-link {
-    display: block;
-    text-align: center;
-    padding: 10px;
-    background: #f1f1f1;
-    color: #0D1282;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: bold;
+.action-buttons-stack {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
 }
 
-/* 6. DATA DISPLAY */
-.status-header {
+.action-btn-link {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.cert-id-badge {
-    background: #eef2ff;
-    color: #0D1282;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.cert-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.grid-item span {
-    font-size: 0.7rem;
-    color: #888;
-    text-transform: uppercase;
-    font-weight: bold;
-}
-
-.grid-item p {
-    color: #0D1282;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    background: #0D1282;
+    color: white;
+    text-decoration: none;
+    border-radius: 14px;
     font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    flex: 1;
 }
 
-/* 7. OTHER STATES */
-.empty-state {
-    text-align: center;
-    margin-top: 20px;
-    color: #ccc;
+.action-btn-link:hover {
+    background: #06094d;
+    transform: translateY(-2px);
 }
 
-.search-icon-placeholder { font-size: 4rem; }
-
-.result-box.invalid {
-    text-align: center;
-    padding: 40px;
-    border: 2px dashed #D71313;
-    border-radius: 20px;
-    color: #D71313;
+.action-btn-link.download {
+    background: #ffffff;
+    color: #0D1282;
+    border: 2px solid #0D1282;
 }
 
-.back-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+.action-btn-link.download:hover {
+    background: #f8fafc;
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* RESPONSIVE */
-@media (max-width: 950px) {
-    .auth-split-wrapper.glass-effect { flex-direction: column; }
-    .pdf-iframe { height: 300px; }
-    .cert-grid { grid-template-columns: 1fr; }
-}
-
+/* Responsive */
 @media (max-width: 600px) {
-    .verify-left,
-    .verify-right {
-        padding: 24px;
-    }
+    .verification-details-grid { grid-template-columns: 1fr; }
+    .preview-action-row { flex-direction: column; }
+    .verify-actions-row { flex-direction: column; }
+    .pdf-mini-preview { height: 500px; }
+    .action-buttons-stack { flex-direction: column; }
+}
 
-    .scanner-panel {
-        padding: 10px;
-        border-radius: 14px;
-    }
+/* 6. Error State */
+.result-box-error {
+    background: #fff1f2;
+    border: 2px dashed #fecdd3;
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    animation: shake 0.5s ease;
+}
 
-    .scanner-corner {
-        width: 20px;
-        height: 20px;
-    }
+.result-box-error h3 {
+    margin: 16px 0 8px;
+    color: #991b1b;
+    font-weight: 800;
+}
 
-    .scan-btn,
-    .verify-btn {
-        padding: 13px 14px;
-    }
+.result-box-error p {
+    color: #b91c1c;
+    font-weight: 500;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .verification-details-grid { grid-template-columns: 1fr; }
+    .preview-action-row { flex-direction: column; }
+    .verify-actions-row { flex-direction: column; }
+    .pdf-mini-preview { height: 250px; }
 }

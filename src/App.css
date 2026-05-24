@@ -42,8 +42,8 @@ header {
   background-image: 
     linear-gradient(
       to bottom, 
-      rgba(13, 18, 130, 0.9), 
-      rgba(13, 18, 130, 0.4)
+      rgb(21, 29, 173), 
+      rgba(10, 10, 74, 0.7)
     ),
     url('Images/Stacy.jpg');
   background-size: cover;

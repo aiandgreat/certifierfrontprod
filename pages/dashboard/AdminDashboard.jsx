@@ -2,14 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import JSZip from 'jszip';
+import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon } from 'lucide-react';
 import './AdminDashboard.css';
 import PlaceholderImg from '../../src/assets/hero.png';
+import assign from '../../src/Images/assign.svg';
+import download from '../../src/Images/download.svg';
+import deleteicon from '../../src/Images/delete.svg';
+import reissue from '../../src/Images/reissue.svg';
+import edit from '../../src/Images/edit.svg';
+
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const ITEMS_PER_PAGE = 10;
+  const [currentView, setCurrentView] = useState('overview');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [stats, setStats] = useState({ totalCerts: 0, totalUsers: 0, uploads: 0 });
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [recentCerts, setRecentCerts] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [users, setUsers] = useState([]);
@@ -19,8 +30,8 @@ const AdminDashboard = () => {
   const [editingCert, setEditingCert] = useState(null);
   const [editFormData, setEditFormData] = useState({ full_name: '', course: '', owner: '' });
   const [editingUser, setEditingUser] = useState(null);
-  const [editUserFormData, setEditUserFormData] = useState({ 
-    first_name: '', last_name: '', email: '', username: '', role: '' 
+  const [editUserFormData, setEditUserFormData] = useState({
+    first_name: '', last_name: '', email: '', username: '', role: ''
   });
 
   // UI States
@@ -32,9 +43,11 @@ const AdminDashboard = () => {
   const [templateSearch, setTemplateSearch] = useState('');
   const [issuanceSearch, setIssuanceSearch] = useState('');
   const [certStatusFilter, setCertStatusFilter] = useState('all');
+  const [analyticsYear, setAnalyticsYear] = useState('all');
   const [selectedCerts, setSelectedCerts] = useState(new Set());
   const [downloadingCerts, setDownloadingCerts] = useState(false);
   const [reissuingCertId, setReissuingCertId] = useState(null);
+  const [activeRecentCertId, setActiveRecentCertId] = useState(null);
   const [currentUserPage, setCurrentUserPage] = useState(1);
   const [currentTemplatePage, setCurrentTemplatePage] = useState(1);
   const [currentCertPage, setCurrentCertPage] = useState(1);
@@ -52,29 +65,61 @@ const AdminDashboard = () => {
       navigate('/login');
       return;
     }
+
+    setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [certs, userRes, uploads, tmpls] = await Promise.all([
-        axios.get(`${API_BASE}/api/certificates/`, { headers }),
-        axios.get(`${API_BASE}/api/users/`, { headers }),
-        axios.get(`${API_BASE}/api/uploads/`, { headers }),
-        axios.get(`${API_BASE}/api/templates/`, { headers })
-      ]);
 
-      setRecentCerts(certs.data);
-      setTemplates(tmpls.data);
-      setUsers(userRes.data);
+      // Individual fetching with error safety
+      const safeGet = async (url) => {
+        try {
+          const res = await axios.get(url, { headers });
+          return res.data;
+        } catch (e) {
+          console.error(`Error fetching ${url}:`, e);
+          return [];
+        }
+      };
+
+      const certsData = await safeGet(`${API_BASE}/api/certificates/`);
+      const usersData = await safeGet(`${API_BASE}/api/users/`);
+      const uploadsData = await safeGet(`${API_BASE}/api/uploads/`);
+      const tmplsData = await safeGet(`${API_BASE}/api/templates/`);
+
+      setRecentCerts(certsData);
+      setTemplates(tmplsData);
+      setUsers(usersData);
       setStats({
-        totalCerts: certs.data.length,
-        totalUsers: userRes.data.length,
-        uploads: uploads.data.length
+        totalCerts: certsData.length,
+        totalUsers: usersData.length,
+        uploads: uploadsData.length
       });
     } catch (err) {
-      console.error("Fetch error", err);
+      console.error("Critical fetch error", err);
     } finally {
       setLoading(false);
     }
   };
+
+  const fetchAnalytics = async () => {
+    if (!token) return;
+    setAnalyticsLoading(true);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(`${API_BASE}/api/analytics/`, { headers });
+      setAnalyticsData(response.data);
+    } catch (err) {
+      console.error("Analytics fetch error", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentView === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [currentView]);
 
   const getFullUrl = (path) => {
     if (!path) return PlaceholderImg;
@@ -149,15 +194,10 @@ const AdminDashboard = () => {
         template: getTemplateId(cert)
       };
 
-      // Prefer dedicated reissue endpoint if backend provides it.
       try {
         await axios.post(`${API_BASE}/api/certificates/${cert.id}/reissue/`, payload, { headers });
       } catch (error) {
-        if (error?.response?.status !== 404) {
-          throw error;
-        }
-
-        // Fallback: create new certificate from existing data (keep old certificate).
+        if (error?.response?.status !== 404) throw error;
         await axios.post(`${API_BASE}/api/certificates/`, payload, { headers });
       }
 
@@ -175,7 +215,6 @@ const AdminDashboard = () => {
   const handleSaveUserEdit = async (id) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      // Pinadala ang data na walang password field
       await axios.patch(`${API_BASE}/api/users/${id}/`, editUserFormData, { headers });
       setEditingUser(null);
       showToast('User updated successfully!');
@@ -185,7 +224,6 @@ const AdminDashboard = () => {
 
   const handleDelete = (id, type) => {
     let url = `${API_BASE}/api/${type === 'cert' ? 'certificates' : type + 's'}/${id}/`;
-    
     setModal({
       show: true,
       title: 'Confirm Delete',
@@ -201,58 +239,42 @@ const AdminDashboard = () => {
     });
   };
 
-    const openAssignModal = (cert) => {
-      setAssignModal({ show: true, certId: cert.id, owner: getOwnerId(cert) });
-    };
+  const openAssignModal = (cert) => {
+    setAssignModal({ show: true, certId: cert.id, owner: getOwnerId(cert) });
+  };
 
-    const handleAssignConfirm = async () => {
-      if (!assignModal.certId) return;
-      setAssigningCertId(assignModal.certId);
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-        await axios.patch(`${API_BASE}/api/certificates/${assignModal.certId}/`, { owner: assignModal.owner || null }, { headers });
-        showToast('Certificate assigned successfully!');
-        setAssignModal({ show: false, certId: null, owner: '' });
-        fetchData();
-      } catch (err) {
-        console.error('Assign error', err);
-        showToast('Failed to assign certificate');
-      } finally {
-        setAssigningCertId(null);
-      }
-    };
+  const handleAssignConfirm = async () => {
+    if (!assignModal.certId) return;
+    setAssigningCertId(assignModal.certId);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.patch(`${API_BASE}/api/certificates/${assignModal.certId}/`, { owner: assignModal.owner || null }, { headers });
+      showToast('Certificate assigned successfully!');
+      setAssignModal({ show: false, certId: null, owner: '' });
+      fetchData();
+    } catch (err) {
+      console.error('Assign error', err);
+      showToast('Failed to assign certificate');
+    } finally {
+      setAssigningCertId(null);
+    }
+  };
 
   const closeMobileNav = () => setIsMobileNavOpen(false);
 
-  useEffect(() => {
-    setCurrentUserPage(1);
-  }, [userSearch]);
-
-  useEffect(() => {
-    setCurrentTemplatePage(1);
-  }, [templateSearch]);
-
-  useEffect(() => {
-    setCurrentCertPage(1);
-  }, [issuanceSearch, certStatusFilter]);
+  useEffect(() => { setCurrentUserPage(1); }, [userSearch]);
+  useEffect(() => { setCurrentTemplatePage(1); }, [templateSearch]);
+  useEffect(() => { setCurrentCertPage(1); }, [issuanceSearch, certStatusFilter]);
 
   useEffect(() => {
     const totalUserPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
     const totalTemplatePages = Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE));
     const totalCertPages = Math.max(1, Math.ceil(recentCerts.length / ITEMS_PER_PAGE));
 
-    if (currentUserPage > totalUserPages) {
-      setCurrentUserPage(totalUserPages);
-    }
-    if (currentTemplatePage > totalTemplatePages) {
-      setCurrentTemplatePage(totalTemplatePages);
-    }
-    if (currentCertPage > totalCertPages) {
-      setCurrentCertPage(totalCertPages);
-    }
+    if (currentUserPage > totalUserPages) setCurrentUserPage(totalUserPages);
+    if (currentTemplatePage > totalTemplatePages) setCurrentTemplatePage(totalTemplatePages);
+    if (currentCertPage > totalCertPages) setCurrentCertPage(totalCertPages);
   }, [filteredUsers.length, filteredTemplates.length, recentCerts.length, currentUserPage, currentTemplatePage, currentCertPage]);
-
-  if (loading) return <div className="loading-screen">Loading Portal...</div>;
 
   const paginatedUsers = filteredUsers.slice((currentUserPage - 1) * ITEMS_PER_PAGE, currentUserPage * ITEMS_PER_PAGE);
   const paginatedTemplates = filteredTemplates.slice((currentTemplatePage - 1) * ITEMS_PER_PAGE, currentTemplatePage * ITEMS_PER_PAGE);
@@ -275,20 +297,71 @@ const AdminDashboard = () => {
 
   const paginatedRecentCerts = filteredRecentCerts.slice((currentCertPage - 1) * ITEMS_PER_PAGE, currentCertPage * ITEMS_PER_PAGE);
 
+  useEffect(() => {
+    if (paginatedRecentCerts.length === 0) {
+      setActiveRecentCertId(null);
+      return;
+    }
+
+    const activeVisible = paginatedRecentCerts.some((cert) => cert.id === activeRecentCertId);
+    if (!activeVisible) {
+      setActiveRecentCertId(paginatedRecentCerts[0].id);
+    }
+  }, [paginatedRecentCerts, activeRecentCertId]);
+
+  if (loading) return <div className="loading-screen" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa' }}>
+    <div style={{ textAlign: 'center' }}>
+      <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #0D1282', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
+      <p style={{ fontWeight: '700', color: '#0D1282' }}>Loading Administrator Portal...</p>
+    </div>
+  </div>;
+
   const toggleCertSelect = (certId) => {
     const newSelected = new Set(selectedCerts);
-    if (newSelected.has(certId)) {
-      newSelected.delete(certId);
-    } else {
-      newSelected.add(certId);
-    }
+    if (newSelected.has(certId)) newSelected.delete(certId);
+    else newSelected.add(certId);
     setSelectedCerts(newSelected);
+  };
+
+  const selectedRecentCerts = paginatedRecentCerts.filter((cert) => selectedCerts.has(cert.id));
+  const selectedRecentCert = selectedRecentCerts.length === 1 ? selectedRecentCerts[0] : null;
+  const canUseSingleSelectionActions = selectedRecentCerts.length === 1;
+  const canDownloadRecentCerts = selectedRecentCerts.length > 0;
+
+  const handleHeaderReissue = () => {
+    if (!selectedRecentCert) return;
+    setEditingCert(selectedRecentCert.id);
+    setEditFormData({
+      full_name: selectedRecentCert.full_name,
+      course: selectedRecentCert.course,
+      owner: getOwnerId(selectedRecentCert)
+    });
+  };
+
+  const handleHeaderAssign = () => {
+    if (!selectedRecentCert) return;
+    openAssignModal(selectedRecentCert);
+  };
+
+  const handleHeaderDownload = () => {
+    if (!canDownloadRecentCerts) return;
+
+    if (selectedRecentCerts.length > 1) {
+      downloadMultiplePDFs();
+      return;
+    }
+
+    downloadSinglePDF(selectedRecentCerts[0]);
+  };
+
+  const handleHeaderDelete = () => {
+    if (!selectedRecentCert) return;
+    handleDelete(selectedRecentCert.id, 'cert');
   };
 
   const toggleSelectAll = () => {
     const visibleCertIds = paginatedRecentCerts.map((cert) => cert.id);
     const allVisibleSelected = visibleCertIds.length > 0 && visibleCertIds.every((certId) => selectedCerts.has(certId));
-
     if (allVisibleSelected) {
       setSelectedCerts((prevSelected) => {
         const nextSelected = new Set(prevSelected);
@@ -334,13 +407,10 @@ const AdminDashboard = () => {
       showToast('Please select at least one certificate');
       return;
     }
-
     setDownloadingCerts(true);
     try {
       const zip = new JSZip();
       const selectedCertsList = filteredRecentCerts.filter((cert) => selectedCerts.has(cert.id));
-
-      // Download all PDFs and add to zip
       await Promise.all(
         selectedCertsList.map(async (cert) => {
           const response = await axios.get(`${API_BASE}/api/certificates/${cert.id}/download/`, {
@@ -350,8 +420,6 @@ const AdminDashboard = () => {
           zip.file(`Cert_${cert.certificate_id}.pdf`, response.data);
         })
       );
-
-      // Generate and download zip
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       const fileURL = window.URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
@@ -361,7 +429,6 @@ const AdminDashboard = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(fileURL);
-      
       showToast(`Downloaded ${selectedCerts.size} certificate(s) as zip`);
       setSelectedCerts(new Set());
     } catch (error) {
@@ -372,314 +439,395 @@ const AdminDashboard = () => {
     }
   };
 
+  const renderAnalytics = () => {
+    if (analyticsLoading || !analyticsData) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+          <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid #f3f3f3', borderTop: '3px solid #0D1282', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        </div>
+      );
+    }
+
+    const monthlyStats = analyticsData.monthly_stats || [];
+    const availableYears = [...new Set(
+      monthlyStats
+        .map((stat) => {
+          const parsedDate = new Date(`${stat.month} 1`);
+          return Number.isNaN(parsedDate.getTime()) ? null : parsedDate.getFullYear();
+        })
+        .filter((year) => year !== null)
+    )].sort((left, right) => right - left);
+
+    const selectedYear = analyticsYear === 'all' ? 'all' : Number(analyticsYear);
+
+    const filteredMonthlyStats = selectedYear === 'all'
+      ? monthlyStats
+      : monthlyStats.filter((stat) => {
+        const parsedDate = new Date(`${stat.month} 1`);
+        return !Number.isNaN(parsedDate.getTime()) && parsedDate.getFullYear() === selectedYear;
+      });
+
+    const chartSeries = filteredMonthlyStats
+      .map((stat) => {
+        const parsedDate = new Date(`${stat.month} 1`);
+        if (Number.isNaN(parsedDate.getTime())) return null;
+
+        const count = Number(stat.count) || 0;
+        if (count <= 0) return null;
+
+        return {
+          date: new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1),
+          month: parsedDate.toLocaleString('en-US', { month: 'short' }),
+          year: parsedDate.getFullYear(),
+          count,
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => left.date - right.date)
+      .slice(0, 12);
+    const chartMax = Math.max(1, ...chartSeries.map((stat) => stat.count));
+    const filteredCerts = selectedYear === 'all'
+      ? recentCerts
+      : recentCerts.filter((cert) => {
+        const parsedDate = new Date(cert.date_issued || cert.created_at || cert.created || '');
+        return !Number.isNaN(parsedDate.getTime()) && parsedDate.getFullYear() === selectedYear;
+      });
+    const validCertificates = filteredCerts.filter((cert) => cert.status === 'VALID').length;
+    const invalidCertificates = filteredCerts.filter((cert) => cert.status === 'INVALID' || cert.status === 'REVOKED').length;
+    const certificateTotal = validCertificates + invalidCertificates;
+    const validShare = certificateTotal > 0 ? (validCertificates / certificateTotal) * 100 : 0;
+
+    return (
+      <div className="analytics-view">
+        <div className="admin-table-container analytics-chart-card analytics-pie-card">
+          <div className="table-header analytics-chart-header">
+            <div className="analytics-chart-title">
+              <BarChart3 size={24} color="#0D1282" />
+              <h3>Certificate Status</h3>
+            </div>
+            <p className="analytics-chart-subtitle">Valid vs invalid certificates for the selected year</p>
+          </div>
+
+          <div className="analytics-pie-chart" role="img" aria-label="Pie chart showing valid and invalid certificates">
+            <div className="analytics-pie-ring" style={{ '--pie-share': `${validShare}%` }}>
+              <div className="analytics-pie-surface" />
+              <div className="analytics-pie-highlight" />
+              <div className="analytics-pie-hole">
+                <strong>{certificateTotal}</strong>
+                <span>Total</span>
+              </div>
+            </div>
+
+            <div className="analytics-pie-legend">
+              <div className="analytics-pie-legend-item">
+                <span className="analytics-pie-dot valid" />
+                <div>
+                  <strong>Valid Certificates</strong>
+                  <p>{validCertificates}</p>
+                </div>
+              </div>
+              <div className="analytics-pie-legend-item">
+                <span className="analytics-pie-dot invalid" />
+                <div>
+                  <strong>Invalid Certificates</strong>
+                  <p>{invalidCertificates}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-table-container analytics-chart-card">
+          <div className="table-header analytics-chart-header">
+            <div className="analytics-chart-title">
+              <BarChart3 size={24} color="#0D1282" />
+              <h3>Monthly Trends</h3>
+            </div>
+            <div className="analytics-chart-filter">
+              <p className="analytics-chart-subtitle">Created certificates per month</p>
+              <select
+                className="analytics-year-select"
+                value={analyticsYear}
+                onChange={(e) => setAnalyticsYear(e.target.value)}
+                aria-label="Filter analytics by year"
+              >
+                <option value="all">All Years</option>
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="analytics-bar-chart" role="img" aria-label="Bar graph showing created certificates by month and year">
+            <div className="analytics-bar-chart-grid" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="analytics-bar-chart-bars">
+              {chartSeries.map((stat, index) => {
+                const barHeight = Math.max(12, (stat.count / chartMax) * 100);
+
+                return (
+                  <div key={`${stat.year}-${stat.month}-${index}`} className="analytics-bar-item">
+                    <div className="analytics-bar-value">{stat.count}</div>
+                    <div className="analytics-bar-track">
+                      <div
+                        className="analytics-bar-fill"
+                        style={{ height: `${barHeight}%` }}
+                        title={`${stat.month} ${stat.year}: ${stat.count} certificates`}
+                      />
+                    </div>
+                    <div className="analytics-bar-label">
+                      <span>{stat.month}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-container">
-      <button
-        className="mobile-menu-toggle"
-        type="button"
-        onClick={() => setIsMobileNavOpen((open) => !open)}
-        aria-label="Toggle navigation menu"
-        aria-expanded={isMobileNavOpen}
-      >
-        <span />
-        <span />
-        <span />
+      <style>{`
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      `}</style>
+
+      <button className="mobile-menu-toggle" type="button" onClick={() => setIsMobileNavOpen((open) => !open)} aria-label="Toggle navigation menu">
+        <span /><span /><span />
       </button>
 
-      {isMobileNavOpen && (
-        <div className="mobile-menu-overlay" onClick={closeMobileNav} />
-      )}
-
-      {toast.show && (
-        <div className="delete-success-toast">
-          <span className="toast-icon">✅</span>
-          <p>{toast.message}</p>
-        </div>
-      )}
+      {isMobileNavOpen && <div className="mobile-menu-overlay" onClick={closeMobileNav} />}
+      {toast.show && <div className="delete-success-toast"><span className="toast-icon">✅</span><p>{toast.message}</p></div>}
 
       <aside className={`admin-sidebar ${isMobileNavOpen ? 'open' : ''}`}>
         <h2>CertiFier</h2>
         <nav className="admin-nav">
-          <Link to="/AdminDashboard" className="admin-nav-link active" onClick={closeMobileNav}>Overview</Link>
-          <Link to="/UploadTemplate" className="admin-nav-link" onClick={closeMobileNav}>Templates</Link>
-          <Link to="/CSVUpload" className="admin-nav-link" onClick={closeMobileNav}>Generate Certificate</Link>
-          <Link to="/verify" className="admin-nav-link" onClick={closeMobileNav}>Verify Tool</Link>
+          <button className={`admin-nav-link ${currentView === 'overview' ? 'active' : ''}`} onClick={() => { setCurrentView('overview'); closeMobileNav(); }}><LayoutDashboard size={20} /> Overview</button>
+          <button className={`admin-nav-link ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => { setCurrentView('analytics'); closeMobileNav(); }}><BarChart3 size={20} /> Analytics</button>
+          <Link to="/UploadTemplate" className="admin-nav-link" onClick={closeMobileNav}><FileText size={20} /> Templates</Link>
+          <Link to="/CSVUpload" className="admin-nav-link" onClick={closeMobileNav}><Upload size={20} /> Generate Certificate</Link>
+          <Link to="/verify" className="admin-nav-link" onClick={closeMobileNav}><ShieldCheck size={20} /> Verify Tool</Link>
         </nav>
-        <button className="logout-btn" onClick={() => { localStorage.clear(); navigate('/login'); }}>Logout</button>
+        <button className="logout-btn" onClick={() => { localStorage.clear(); navigate('/login'); }}><LogOut size={20} /> Logout</button>
       </aside>
 
       <main className="admin-main">
         <header>
-          <h1>Administrator Dashboard</h1>
-          <p>Manage users, certificates, and system templates.</p>
+          <h1>{currentView === 'overview' ? 'Administrator Dashboard' : 'System Analytics'}</h1>
+          <p>{currentView === 'overview' ? 'Manage users, certificates, and system templates.' : 'Real-time insights into system performance and environmental impact.'}</p>
         </header>
 
-        <section className="admin-stats-grid">
-          <div className="admin-stat-card"><h3>{stats.totalCerts}</h3><p>Certificates Issued</p></div>
-          <div className="admin-stat-card"><h3>{stats.totalUsers}</h3><p>Registered Users</p></div>
-          <div className="admin-stat-card"><h3>{stats.uploads}</h3><p>Bulk Uploads</p></div>
-        </section>
+        {currentView === 'overview' ? (
+          <>
+            <section className="admin-stats-grid">
+              <div className="admin-stat-card"><h3>{stats.totalCerts}</h3><p>Certificates Issued</p></div>
+              <div className="admin-stat-card"><h3>{stats.totalUsers}</h3><p>Registered Users</p></div>
+              <div className="admin-stat-card"><h3>{stats.uploads}</h3><p>Bulk Uploads</p></div>
+            </section>
 
-
-      {assignModal.show && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Assign Certificate</h2>
-            <p>Select an owner for this certificate.</p>
-            <div style={{ margin: '12px 0' }}>
-              <select className="edit-input" value={assignModal.owner} onChange={(e) => setAssignModal({ ...assignModal, owner: e.target.value })}>
-                <option value="">Unassigned</option>
-                {users.map((user) => (
-                  <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>
-                ))}
-              </select>
-            </div>
-            <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setAssignModal({ show: false, certId: null, owner: '' })}>Cancel</button>
-              <button className="save-btn" onClick={handleAssignConfirm} disabled={assigningCertId === assignModal.certId}>
-                {assigningCertId === assignModal.certId ? 'Assigning...' : 'Assign'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-        <section className="admin-table-container">
-          <div className="table-header">
-            <h3>Registered Users</h3>
-            <input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="table-search-input" />
-          </div>
-          <div className="table-responsive">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.first_name} onChange={e => setEditUserFormData({...editUserFormData, first_name: e.target.value})} /> : user.first_name}</td>
-                    <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.last_name} onChange={e => setEditUserFormData({...editUserFormData, last_name: e.target.value})} /> : user.last_name}</td>
-                    <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.email} onChange={e => setEditUserFormData({...editUserFormData, email: e.target.value})} /> : user.email}</td>
-                    <td><span className={`badge ${user.role === 'admin' ? 'invalid' : 'valid'}`}>{user.role?.toUpperCase()}</span></td>
-                    <td>
-                      <div className="action-buttons">
-                        {editingUser === user.id ? (
-                          <><button className="save-btn" onClick={() => handleSaveUserEdit(user.id)}>Save</button><button className="cancel-btn" onClick={() => setEditingUser(null)}>Cancel</button></>
-                        ) : (
-                          <><button className="edit-btn" onClick={() => { setEditingUser(user.id); setEditUserFormData({ first_name: user.first_name, last_name: user.last_name, email: user.email, username: user.username, role: user.role }); }}>Edit</button>
-                          {user.role !== 'admin' && <button className="delete-btn" onClick={() => handleDelete(user.id, 'user')}>Delete</button>}</>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="pagination-controls">
-            <span className="pagination-summary">
-              Showing {filteredUsers.length === 0 ? 0 : (currentUserPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentUserPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}
-            </span>
-            <div className="pagination-buttons">
-              <button
-                type="button"
-                className="pagination-btn"
-                onClick={() => setCurrentUserPage((page) => Math.max(1, page - 1))}
-                disabled={currentUserPage === 1}
-              >
-                Previous
-              </button>
-              <span className="pagination-page-indicator">
-                Page {currentUserPage} of {Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}
-              </span>
-              <button
-                type="button"
-                className="pagination-btn"
-                onClick={() => setCurrentUserPage((page) => Math.min(Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)), page + 1))}
-                disabled={currentUserPage >= Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="admin-table-container">
-          <div className="table-header">
-            <h3>System Templates</h3>
-            <input type="text" placeholder="Search templates..." value={templateSearch} onChange={(e) => setTemplateSearch(e.target.value)} className="table-search-input" />
-          </div>
-          {templates.length === 0 ? (
-            <p className="no-data">No templates uploaded yet.</p>
-          ) : (
-            <>
-            <div className="templates-grid">
-              {paginatedTemplates.map((template) => (
-                <div key={template.id} className="template-card">
-                  <div className="template-preview">
-                    <img
-                      src={getFullUrl(template.background)}
-                      alt={template.name}
-                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }}
-                    />
+            {assignModal.show && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <h2>Assign Certificate</h2>
+                  <p>Select an owner for this certificate.</p>
+                  <div style={{ margin: '12px 0' }}>
+                    <select className="edit-input" value={assignModal.owner} onChange={(e) => setAssignModal({ ...assignModal, owner: e.target.value })}>
+                      <option value="">Unassigned</option>
+                      {users.map((user) => <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>)}
+                    </select>
                   </div>
-                  <div className="template-info">
-                    <h4>{template.name}</h4>
-                    <button className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button>
+                  <div className="modal-actions">
+                    <button className="cancel-btn" onClick={() => setAssignModal({ show: false, certId: null, owner: '' })}>Cancel</button>
+                    <button className="save-btn" onClick={handleAssignConfirm} disabled={assigningCertId === assignModal.certId}>{assigningCertId === assignModal.certId ? 'Assigning...' : 'Assign'}</button>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="pagination-controls">
-              <span className="pagination-summary">
-                Showing {filteredTemplates.length === 0 ? 0 : (currentTemplatePage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentTemplatePage * ITEMS_PER_PAGE, filteredTemplates.length)} of {filteredTemplates.length}
-              </span>
-              <div className="pagination-buttons">
-                <button
-                  type="button"
-                  className="pagination-btn"
-                  onClick={() => setCurrentTemplatePage((page) => Math.max(1, page - 1))}
-                  disabled={currentTemplatePage === 1}
-                >
-                  Previous
-                </button>
-                <span className="pagination-page-indicator">
-                  Page {currentTemplatePage} of {Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}
-                </span>
-                <button
-                  type="button"
-                  className="pagination-btn"
-                  onClick={() => setCurrentTemplatePage((page) => Math.min(Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE)), page + 1))}
-                  disabled={currentTemplatePage >= Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}
-                >
-                  Next
-                </button>
               </div>
-            </div>
-            </>
-          )}
-        </section>
+            )}
 
-        <section className="admin-table-container">
-          <div className="table-header">
-            <h3>Recent Issuances</h3>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <select
-                value={certStatusFilter}
-                onChange={(e) => setCertStatusFilter(e.target.value)}
-                className="table-search-input"
-                style={{ width: '150px' }}
-              >
-                <option value="all">All Certificates</option>
-                <option value="valid">Valid</option>
-                <option value="invalid">Invalid</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Search issuances..."
-                value={issuanceSearch}
-                onChange={(e) => setIssuanceSearch(e.target.value)}
-                className="table-search-input"
-              />
-              {selectedCerts.size > 0 && (
-                <button
-                  className="edit-btn"
-                  onClick={downloadMultiplePDFs}
-                  disabled={downloadingCerts}
-                  style={{ whiteSpace: 'nowrap', minWidth: '150px' }}
-                >
-                  {downloadingCerts ? 'Downloading...' : `Download (${selectedCerts.size})`}
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="table-responsive">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '40px' }}>
-                    <input
-                      type="checkbox"
-                      checked={paginatedRecentCerts.length > 0 && paginatedRecentCerts.every((cert) => selectedCerts.has(cert.id))}
-                      onChange={toggleSelectAll}
-                      title="Select all"
-                    />
-                  </th>
-                  <th>Full ID</th><th>Recipient</th><th>Course</th><th>Owner</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedRecentCerts.map((cert) => (
-                  <tr key={cert.id}>
-                    <td style={{ width: '40px', textAlign: 'center' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedCerts.has(cert.id)}
-                        onChange={() => toggleCertSelect(cert.id)}
-                      />
-                    </td>
-                    <td>#{cert.certificate_id?.toUpperCase()}</td>
-                    <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.full_name} onChange={e => setEditFormData({ ...editFormData, full_name: e.target.value })} /> : cert.full_name}</td>
-                    <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.course} onChange={e => setEditFormData({ ...editFormData, course: e.target.value })} /> : cert.course}</td>
-                    <td>
-                      {editingCert === cert.id ? (
-                        <select className="edit-input" value={editFormData.owner} onChange={e => setEditFormData({ ...editFormData, owner: e.target.value })}>
-                          <option value="">Unassigned</option>
-                          {users.map((user) => (
-                            <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        getOwnerDisplay(cert)
-                      )}
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        {editingCert === cert.id ? (
-                          <><button className="save-btn" onClick={() => handleSaveReissue(cert)} disabled={reissuingCertId === cert.id}>{reissuingCertId === cert.id ? 'Reissuing...' : 'Reissue Now'}</button><button className="cancel-btn" onClick={() => setEditingCert(null)} disabled={reissuingCertId === cert.id}>Cancel</button></>
-                        ) : (
-                          <>
-                            <button className="edit-btn" onClick={() => { setEditingCert(cert.id); setEditFormData({ full_name: cert.full_name, course: cert.course, owner: getOwnerId(cert) }) }}>Reissue Certificate</button>
-                            <button className="view-file-btn" onClick={() => downloadSinglePDF(cert)} disabled={downloadingCerts}>Download</button>
-                            <button className="assign-btn" onClick={() => openAssignModal(cert)}>Assign</button>
-                            <button className="delete-btn" onClick={() => handleDelete(cert.id, 'cert')}>Delete</button>
-                          </>
-                        )}
+            <section className="admin-table-container">
+              <div className="table-header"><h3>Registered Users</h3><input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="table-search-input" /></div>
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead><tr><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {paginatedUsers.map((user) => (
+                      <tr key={user.id}>
+                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.first_name} onChange={e => setEditUserFormData({ ...editUserFormData, first_name: e.target.value })} /> : user.first_name}</td>
+                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.last_name} onChange={e => setEditUserFormData({ ...editUserFormData, last_name: e.target.value })} /> : user.last_name}</td>
+                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.email} onChange={e => setEditUserFormData({ ...editUserFormData, email: e.target.value })} /> : user.email}</td>
+                        <td><span className={`badge ${user.role === 'admin' ? 'invalid' : 'valid'}`}>{user.role?.toUpperCase()}</span></td>
+                        <td>
+                          <div className="action-buttons">
+                            {editingUser === user.id ? (
+                              <><button className="save-btn" onClick={() => handleSaveUserEdit(user.id)}>Save</button><button className="cancel-btn" onClick={() => setEditingUser(null)}>                                    
+                              Cancel</button></>
+                            ) : (
+                              <>
+                                <button
+                                  className="edit-btn"
+                                  onClick={() => {
+                                    setEditingUser(user.id);
+                                    setEditUserFormData({
+                                      first_name: user.first_name,
+                                      last_name: user.last_name,
+                                      email: user.email,
+                                      username: user.username,
+                                      role: user.role
+                                    });
+                                  }}
+                                >
+                                  <img src={edit} alt="" style={{ width: 16, height: 16 }} />
+                                </button>
+
+                                {user.role !== 'admin' && (
+                                  <button
+                                    className="delete-btn"
+                                    onClick={() => handleDelete(user.id, 'user')}
+                                  >
+                                    <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="pagination-controls">
+                <span className="pagination-summary">Showing {filteredUsers.length === 0 ? 0 : (currentUserPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentUserPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}</span>
+                <div className="pagination-buttons">
+                  <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.max(1, page - 1))} disabled={currentUserPage === 1}>Previous</button>
+                  <span className="pagination-page-indicator">Page {currentUserPage} of {Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.min(Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)), page + 1))} disabled={currentUserPage >= Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}>Next</button>
+                </div>
+              </div>
+            </section>
+
+            <section className="admin-table-container">
+              <div className="table-header"><h3>System Templates</h3><input type="text" placeholder="Search templates..." value={templateSearch} onChange={(e) => setTemplateSearch(e.target.value)} className="table-search-input" /></div>
+              {templates.length === 0 ? <p className="no-data">No templates uploaded yet.</p> : (
+                <>
+                  <div className="templates-grid">
+                    {paginatedTemplates.map((template) => (
+                      <div key={template.id} className="template-card">
+                        <div className="template-preview"><img src={getFullUrl(template.background)} alt={template.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }} /></div>
+                        <div className="template-info"><h4>{template.name}</h4><button className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button></div>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="pagination-controls">
-            <span className="pagination-summary">
-              Showing {filteredRecentCerts.length === 0 ? 0 : (currentCertPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentCertPage * ITEMS_PER_PAGE, filteredRecentCerts.length)} of {filteredRecentCerts.length}
-            </span>
-            <div className="pagination-buttons">
-              <button
-                type="button"
-                className="pagination-btn"
-                onClick={() => setCurrentCertPage((page) => Math.max(1, page - 1))}
-                disabled={currentCertPage === 1}
-              >
-                Previous
-              </button>
-              <span className="pagination-page-indicator">
-                Page {currentCertPage} of {Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}
-              </span>
-              <button
-                type="button"
-                className="pagination-btn"
-                onClick={() => setCurrentCertPage((page) => Math.min(Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE)), page + 1))}
-                disabled={currentCertPage >= Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </section>
+                    ))}
+                  </div>
+                  <div className="pagination-controls">
+                    <span className="pagination-summary">Showing {filteredTemplates.length === 0 ? 0 : (currentTemplatePage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentTemplatePage * ITEMS_PER_PAGE, filteredTemplates.length)} of {filteredTemplates.length}</span>
+                    <div className="pagination-buttons">
+                      <button className="pagination-btn" onClick={() => setCurrentTemplatePage((page) => Math.max(1, page - 1))} disabled={currentTemplatePage === 1}>Previous</button>
+                      <span className="pagination-page-indicator">Page {currentTemplatePage} of {Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}</span>
+                      <button className="pagination-btn" onClick={() => setCurrentTemplatePage((page) => Math.min(Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE)), page + 1))} disabled={currentTemplatePage >= Math.max(1, Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE))}>Next</button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <section className="admin-table-container">
+              <div className="table-header recent-issuance-header">
+                <div className="table-title-group">
+                  <h3>Recent Issuances</h3>
+                  <div className="recent-issuance-actions" aria-label="Recent issuance actions">
+                    <button
+                      type="button"
+                      className="icon-action-btn"
+                      onClick={handleHeaderReissue}
+                      disabled={!canUseSingleSelectionActions || reissuingCertId === selectedRecentCert?.id}
+                      title={canUseSingleSelectionActions ? 'Reissue selected certificate' : 'Select one certificate to reissue'}
+                      aria-label="Reissue selected certificate"
+                    >
+                      <img src={reissue} alt="" style={{ width: 16, height: 16 }} />
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-action-btn"
+                      onClick={handleHeaderAssign}
+                      disabled={!canUseSingleSelectionActions || assigningCertId === selectedRecentCert?.id}
+                      title={canUseSingleSelectionActions ? 'Assign selected certificate' : 'Select one certificate to assign'}
+                      aria-label="Assign selected certificate"
+                    >
+                      <img src={assign} alt="" style={{ width: 16, height: 16 }} />
+                      <UserPlus size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-action-btn icon-action-btn-primary"
+                      onClick={handleHeaderDownload}
+                      disabled={downloadingCerts || !canDownloadRecentCerts}
+                      title={canDownloadRecentCerts ? `Download ${selectedRecentCerts.length} selected certificate(s)` : 'Select a certificate to download'}
+                      aria-label="Download certificates"
+                    >
+                      <img src={download} alt="" style={{ width: 16, height: 16 }} />
+
+                      <DownloadIcon size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-action-btn icon-action-btn-danger"
+                      onClick={handleHeaderDelete}
+                      disabled={!canUseSingleSelectionActions || reissuingCertId === selectedRecentCert?.id}
+                      title={canUseSingleSelectionActions ? 'Delete selected certificate' : 'Select one certificate to delete'}
+                      aria-label="Delete selected certificate"
+                    >
+                      <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
+
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="issuance-toolbar">
+                  <select value={certStatusFilter} onChange={(e) => setCertStatusFilter(e.target.value)} className="table-search-input issuance-filter"><option value="all">All Certificates</option><option value="valid">Valid</option><option value="invalid">Invalid</option></select>
+                  <input type="text" placeholder="Search issuances..." value={issuanceSearch} onChange={(e) => setIssuanceSearch(e.target.value)} className="table-search-input issuance-search" />
+                </div>
+              </div>
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead><tr><th style={{ width: '40px' }}><input type="checkbox" checked={paginatedRecentCerts.length > 0 && paginatedRecentCerts.every((cert) => selectedCerts.has(cert.id))} onChange={toggleSelectAll} title="Select all" /></th><th>Full ID</th><th>Recipient</th><th>Course</th><th>Owner</th></tr></thead>
+                  <tbody>
+                    {paginatedRecentCerts.map((cert) => (
+                      <tr
+                        key={cert.id}
+                        className={activeRecentCertId === cert.id ? 'active-issuance-row' : ''}
+                        onMouseEnter={() => setActiveRecentCertId(cert.id)}
+                        onClick={() => setActiveRecentCertId(cert.id)}
+                      >
+                        <td style={{ width: '40px', textAlign: 'center' }}><input type="checkbox" checked={selectedCerts.has(cert.id)} onChange={() => { toggleCertSelect(cert.id); setActiveRecentCertId(cert.id); }} /></td>
+                        <td>#{cert.certificate_id?.toUpperCase()}</td>
+                        <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.full_name} onChange={e => setEditFormData({ ...editFormData, full_name: e.target.value })} /> : cert.full_name}</td>
+                        <td>{editingCert === cert.id ? <input className="edit-input" value={editFormData.course} onChange={e => setEditFormData({ ...editFormData, course: e.target.value })} /> : cert.course}</td>
+                        <td>{editingCert === cert.id ? (<select className="edit-input" value={editFormData.owner} onChange={e => setEditFormData({ ...editFormData, owner: e.target.value })}><option value="">Unassigned</option>{users.map((user) => <option key={user.id} value={String(user.id)}>{getUserLabel(user)}</option>)}</select>) : getOwnerDisplay(cert)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="pagination-controls">
+                <span className="pagination-summary">Showing {filteredRecentCerts.length === 0 ? 0 : (currentCertPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentCertPage * ITEMS_PER_PAGE, filteredRecentCerts.length)} of {filteredRecentCerts.length}</span>
+                <div className="pagination-buttons">
+                  <button className="pagination-btn" onClick={() => setCurrentCertPage((page) => Math.max(1, page - 1))} disabled={currentCertPage === 1}>Previous</button>
+                  <span className="pagination-page-indicator">Page {currentCertPage} of {Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentCertPage((page) => Math.min(Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE)), page + 1))} disabled={currentCertPage >= Math.max(1, Math.ceil(filteredRecentCerts.length / ITEMS_PER_PAGE))}>Next</button>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : (
+          renderAnalytics()
+        )}
       </main>
 
       {modal.show && (
