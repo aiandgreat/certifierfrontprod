@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Idinagdag ito
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ArrowLeft, CheckCircle2, AlertCircle, FileText, Settings, Type } from 'lucide-react';
+import '../auth/auth.css';
 import './UploadTemplatePage.css';
+import CertiLogo from '../../src/Images/CertiLogo.png';
+import stacy from '../../src/Images/Stacy.jpg';
 
 const PLACEHOLDER_OPTIONS = [
+  // ... (rest of constants)
   { key: 'full_name', label: 'Full Name' },
   { key: 'course', label: 'Course' },
   { key: 'certificate_id', label: 'Certificate ID' },
@@ -238,10 +243,10 @@ const UploadTemplatePage = () => {
   const activeOutputFontSize = toOutputFontSize(activePreviewFontSize);
 
   return (
-    <div className="upload-page-container">
-      {/* Back Button Idinagdag dito */}
+    <div className="auth-container">
       <button className="back-btn" onClick={() => navigate(-1)}>
-         Back
+        <ArrowLeft size={18} />
+        Back
       </button>
 
       {message.text && (
@@ -255,153 +260,176 @@ const UploadTemplatePage = () => {
           </div>
         </div>
       )}
-      <div className="upload-card">
-        <div className="upload-header">
-          <h1>Upload Template</h1>
-          <p>Fill in the details to register your certificate design.</p>
+
+      <div className="auth-split-wrapper">
+        <div className="auth-info-section"
+          style={{
+            backgroundImage: `linear-gradient(165deg, rgba(5, 9, 80, 1), rgba(2, 2, 12, 0.7)), url(${stacy})`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            backgroundSize: "cover"
+          }}>
+          <div className="info-content">
+            <div className='LogoLoginContainer'>
+              <img className='LogoLogin' src={CertiLogo} alt="Certifier Logo" />
+            </div>
+            <h1>Design Templates.</h1>
+            <p>Create and manage professional certificate layouts with our visual drag-and-drop editor.</p>
+            <div className="info-graphic">
+              <span>✓ Visual Editor</span>
+              <span>✓ Custom Fonts</span>
+              <span>✓ QR Integration</span>
+            </div>
+          </div>
         </div>
-        <form className="upload-form" onSubmit={handleUpload}>
-          <div className="form-group">
-            <label>Template Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Graduation 2026"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="drop-zone" onClick={() => fileInputRef.current?.click()}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              hidden
-            />
-            <div className="drop-zone-label">
-              <span className="upload-icon">📄</span>
-              {file ? <strong>{file.name}</strong> : "Click to upload Background Image"}
+
+        <div className="auth-form-section">
+          <div className="auth-card wide">
+            <div className="auth-header">
+              <h2>Upload Template</h2>
+              <p>Fill in the details to register your certificate design.</p>
             </div>
+
+            <form className="auth-form" onSubmit={handleUpload}>
+              <div className="form-group">
+                <label>Template Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Graduation 2026"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0' }}
+                />
+              </div>
+
+              <div className="drop-zone" onClick={() => fileInputRef.current?.click()} style={{ cursor: 'pointer' }}>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  hidden
+                />
+                <div className="drop-zone-label">
+                  <FileText className="upload-icon" size={48} style={{ margin: '0 auto 12px', color: '#0D1282' }} />
+                  {file ? <strong>{file.name}</strong> : <p>Click to upload Background Image</p>}
+                </div>
+              </div>
+
+              {previewUrl && (
+                <div className="template-editor">
+                  <div className="placeholder-toolbar">
+                    {PLACEHOLDER_OPTIONS.map((option) => (
+                      <button
+                        key={option.key}
+                        type="button"
+                        className={activePlaceholderKey === option.key ? 'tool-chip active' : 'tool-chip'}
+                        onClick={() => setActivePlaceholderKey(option.key)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '12px 0' }}>
+                    <Settings size={18} color="#64748b" />
+                    <p className="editor-hint" style={{ margin: 0 }}>
+                      Selected: <strong>{getPlaceholderMeta(activePlaceholderKey).label}</strong>
+                    </p>
+                  </div>
+
+                  <div className="marker-controls">
+                    <label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Type size={14} /> Font Size</div>
+                      <input
+                        type="range"
+                        min="12"
+                        max="120"
+                        value={activePreviewFontSize}
+                        onChange={(e) => handleStyleChange('fontSize', Number(e.target.value))}
+                      />
+                      <span>{activePreviewFontSize}px</span>
+                    </label>
+                    <label>
+                      Color
+                      <input
+                        type="color"
+                        value={placeholderStyles[activePlaceholderKey]?.color || '#111111'}
+                        onChange={(e) => handleStyleChange('color', e.target.value)}
+                        style={{ height: '38px', padding: '2px' }}
+                      />
+                    </label>
+                    <label>
+                      Align
+                      <select
+                        value={placeholderStyles[activePlaceholderKey]?.align || 'center'}
+                        onChange={(e) => handleStyleChange('align', e.target.value)}
+                        style={{ padding: '8px', borderRadius: '8px' }}
+                      >
+                        <option value="left">Right</option>
+                        <option value="center">Center</option>
+                        <option value="right">Left</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div
+                    className={`template-preview ${previewOrientation}`}
+                    onClick={onImageClick}
+                    onPointerMove={handleCanvasPointerMove}
+                    onPointerUp={handleCanvasPointerUp}
+                    onPointerCancel={handleCanvasPointerUp}
+                    onPointerLeave={handleCanvasPointerUp}
+                  >
+                    <img ref={previewImageRef} src={previewUrl} alt="Template preview" draggable={false} onLoad={handlePreviewLoad} />
+                    {markers.map((marker) => {
+                      const horizontalTransform = marker.align === 'center' ? 'translate(-50%, -50%)' : marker.align === 'left' ? 'translate(0, -50%)' : 'translate(-100%, -50%)';
+                      const justifyContent = marker.align === 'center' ? 'center' : marker.align === 'left' ? 'flex-start' : 'flex-end';
+                      return (
+                        <button
+                          key={marker.id}
+                          type="button"
+                          className="template-marker"
+                          style={{
+                            left: `${marker.xPct}%`,
+                            top: `${marker.yPct}%`,
+                            transform: horizontalTransform,
+                            fontSize: `${marker.previewFontSize ?? marker.fontSize}px`,
+                            color: marker.color,
+                            textAlign: marker.align,
+                            justifyContent: justifyContent
+                          }}
+                          onPointerDown={(e) => handleMarkerPointerDown(e, marker.id)}
+                        >
+                          {`{{${marker.key}}}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="marker-list">
+                    {markers.length === 0 ? (
+                      <p className="marker-empty">No markers yet. Click the preview to add <strong>{getPlaceholderMeta(activePlaceholderKey).label}</strong>.</p>
+                    ) : (
+                      markers.map((marker) => (
+                        <div key={marker.id} className="marker-row">
+                          <span>{marker.label}</span>
+                          <span>{marker.xPct}%, {marker.yPct}% | {marker.previewFontSize ?? marker.fontSize}px</span>
+                          <button type="button" onClick={() => removeMarker(marker.id)}>Remove</button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="auth-submit" disabled={loading} style={{ marginTop: '24px' }}>
+                {loading ? 'Uploading Template...' : 'Confirm Upload'}
+              </button>
+            </form>
           </div>
-          {previewUrl && (
-            <div className="template-editor">
-              <div className="placeholder-toolbar">
-                {PLACEHOLDER_OPTIONS.map((option) => (
-                  <button
-                    key={option.key}
-                    type="button"
-                    className={activePlaceholderKey === option.key ? 'tool-chip active' : 'tool-chip'}
-                    onClick={() => setActivePlaceholderKey(option.key)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              <p className="editor-hint">
-                Selected: <strong>{getPlaceholderMeta(activePlaceholderKey).label}</strong>.
-              </p>
-              <div className="marker-controls">
-                <label>
-                  Font Size
-                  <input
-                    type="range"
-                    min="12"
-                    max="120"
-                    value={activePreviewFontSize}
-                    onChange={(e) => handleStyleChange('fontSize', Number(e.target.value))}
-                  />
-                  <span>{activePreviewFontSize}px (export: ~{activeOutputFontSize}px)</span>
-                </label>
-                <label>
-                  Color
-                  <input
-                    type="color"
-                    value={placeholderStyles[activePlaceholderKey]?.color || '#111111'}
-                    onChange={(e) => handleStyleChange('color', e.target.value)}
-                  />
-                </label>
-                <label>
-                  Align
-                  <select
-                    value={placeholderStyles[activePlaceholderKey]?.align || 'center'}
-                    onChange={(e) => handleStyleChange('align', e.target.value)}
-                    disabled={isQrPlaceholder(activePlaceholderKey)}
-                  >
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                  </select>
-                </label>
-              </div>
-              <div
-                className={`template-preview ${previewOrientation}`}
-                onClick={onImageClick}
-                onPointerMove={handleCanvasPointerMove}
-                onPointerUp={handleCanvasPointerUp}
-                onPointerCancel={handleCanvasPointerUp}
-                onPointerLeave={handleCanvasPointerUp}
-              >
-                <img ref={previewImageRef} src={previewUrl} alt="Template preview" draggable={false} onLoad={handlePreviewLoad} />
-                {markers.map((marker) => {
-                  const markerIsQr = isQrPlaceholder(marker.key);
-                  const horizontalTransform = markerIsQr
-                    ? 'translate(-50%, -50%)'
-                    : marker.align === 'center'
-                      ? 'translate(-50%, -50%)'
-                      : marker.align === 'left'
-                        ? 'translate(0, -50%)'
-                        : 'translate(-100%, -50%)';
-                  const justifyContent = markerIsQr
-                    ? 'center'
-                    : marker.align === 'center'
-                      ? 'center'
-                      : marker.align === 'left'
-                        ? 'flex-start'
-                        : 'flex-end';
-                  const markerSize = marker.previewFontSize ?? marker.fontSize;
-                  return (
-                    <button
-                      key={marker.id}
-                      type="button"
-                      className={markerIsQr ? 'template-marker qr-marker' : 'template-marker'}
-                      style={{
-                        left: `${marker.xPct}%`,
-                        top: `${marker.yPct}%`,
-                        transform: horizontalTransform,
-                        fontSize: markerIsQr ? `${Math.max(10, Math.round(markerSize * 0.3))}px` : `${markerSize}px`,
-                        width: markerIsQr ? `${markerSize}px` : undefined,
-                        height: markerIsQr ? `${markerSize}px` : undefined,
-                        color: marker.color,
-                        textAlign: markerIsQr ? 'center' : marker.align,
-                        justifyContent: justifyContent
-                      }}
-                      onPointerDown={(e) => handleMarkerPointerDown(e, marker.id)}
-                    >
-                      {markerIsQr ? 'QR' : `{{${marker.key}}}`}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="marker-list">
-                {markers.length === 0 ? (
-                  <p className="marker-empty">No markers yet.</p>
-                ) : (
-                  markers.map((marker) => (
-                    <div key={marker.id} className="marker-row">
-                      <span>{marker.label}</span>
-                      <span>{marker.xPct}%, {marker.yPct}% | {marker.previewFontSize ?? marker.fontSize}px</span>
-                      <button type="button" onClick={() => removeMarker(marker.id)}>Remove</button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Uploading...' : 'Confirm Upload'}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );

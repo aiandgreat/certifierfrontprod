@@ -1,13 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// Paparse for parsing CSV Files
 import Papa from 'papaparse';
+import { ArrowLeft, CheckCircle2, AlertCircle, Upload, FileText } from 'lucide-react';
+import '../auth/auth.css';
 import './CSVUploadPage.css';
+import CertiLogo from '../../src/Images/CertiLogo.png';
+import stacy from '../../src/Images/Stacy.jpg';
 
 const CSVUploadPage = () => {
   const navigate = useNavigate();
   const ITEMS_PER_PAGE = 10;
+  // ... (rest of states)
   const [csvFile, setCsvFile] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [templates, setTemplates] = useState([]);
@@ -188,14 +192,13 @@ const CSVUploadPage = () => {
       const serverErr = error.response?.data;
       const errorText = serverErr
         ? Object.keys(serverErr)
-            .map(k =>
-              `${k.toUpperCase()}: ${
-                Array.isArray(serverErr[k])
-                  ? serverErr[k].join(', ')
-                  : serverErr[k]
-              }`
-            )
-            .join(' | ')
+          .map(k =>
+            `${k.toUpperCase()}: ${Array.isArray(serverErr[k])
+              ? serverErr[k].join(', ')
+              : serverErr[k]
+            }`
+          )
+          .join(' | ')
         : 'Upload failed.';
 
       setMessage({ type: 'error', text: errorText });
@@ -239,9 +242,9 @@ const CSVUploadPage = () => {
   const paginatedCsvRows = csvRows.slice(csvStartIndex, csvStartIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="upload-page-container">
-      {/* Back Button */}
+    <div className="auth-container">
       <button className="back-btn" onClick={() => navigate(-1)}>
+        <ArrowLeft size={18} />
         Back
       </button>
 
@@ -259,166 +262,194 @@ const CSVUploadPage = () => {
         </div>
       )}
 
-      <div className="upload-card">
-        <div className="upload-header">
-          <h1>Upload CSV</h1>
-          <p>Upload, preview, and bulk-edit certificates before final signing.</p>
+      <div className="auth-split-wrapper">
+        <div className="auth-info-section" style={{
+          backgroundImage: `linear-gradient(165deg, rgba(5, 9, 80, 1), rgba(2, 2, 12, 0.7)), url(${stacy})`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          backgroundSize: "cover"
+        }}>
+          <div className="info-content">
+            <div className='LogoLoginContainer'>
+              <img className='LogoLogin' src={CertiLogo} alt="Certifier Logo" />
+            </div>
+            <h1>Bulk Generation.</h1>
+            <p>Upload your data and generate hundreds of certificates in seconds with our secure batch engine.</p>
+            <div className="info-graphic">
+              <span>✓ CSV Support</span>
+              <span>✓ Bulk Sign</span>
+              <span>✓ Automated</span>
+            </div>
+          </div>
         </div>
 
-        <form className="upload-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Select Template</label>
-            <select
-              value={selectedTemplate}
-              onChange={handleTemplateChange}
-              required
-            >
-              <option value="">Choose a template...</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div
-            className="drop-zone"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".csv"
-              hidden
-            />
-
-            <div className="drop-zone-label">
-              <span className="upload-icon">📄</span>
-              {csvFile ? (
-                <strong>{csvFile.name}</strong>
-              ) : (
-                "Click to upload CSV File"
-              )}
+        <div className="auth-form-section">
+          <div className="auth-card wide">
+            <div className="auth-header">
+              <h2>Generate Certificates</h2>
+              <p>Upload, preview, and bulk-edit certificates before final signing.</p>
             </div>
-          </div>
 
-          {parsingCsv && <p className="csv-status">Reading CSV...</p>}
-
-          {!parsingCsv && csvRows.length > 0 && (
-            <div className="preview-editor">
-              <div className="preview-header-row">
-                <h3>Preview and Bulk Edit</h3>
-                <span>{csvRows.length} row(s)</span>
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Select Template</label>
+                <select
+                  value={selectedTemplate}
+                  onChange={handleTemplateChange}
+                  required
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0' }}
+                >
+                  <option value="">Choose a template...</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {csvWarnings.length > 0 && (
-                <div className="warning-box">
-                  <strong>CSV warnings detected:</strong>
-                  <p>{csvWarnings[0]}</p>
+              <div
+                className="drop-zone"
+                onClick={() => fileInputRef.current?.click()}
+                style={{ cursor: 'pointer' }}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".csv"
+                  hidden
+                />
+
+                <div className="drop-zone-label">
+                  <Upload className="upload-icon" size={48} style={{ margin: '0 auto 12px', color: '#0D1282' }} />
+                  {csvFile ? (
+                    <strong>{csvFile.name}</strong>
+                  ) : (
+                    <p>Click to upload CSV File</p>
+                  )}
                 </div>
-              )}
+              </div>
 
-              <div className="table-scroll">
-                <table className="preview-table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      {csvHeaders.map((header) => (
-                        <th key={header}>{header}</th>
-                      ))}
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCsvRows.map((row, rowOffset) => {
-                      const rowIndex = csvStartIndex + rowOffset;
+              {parsingCsv && <p className="csv-status">Reading CSV...</p>}
 
-                      return (
-                        <tr key={`row-${rowIndex}`}>
-                          <td>{rowIndex + 1}</td>
+              {!parsingCsv && csvRows.length > 0 && (
+                <div className="preview-editor">
+                  <div className="preview-header-row">
+                    <h3>Preview and Bulk Edit</h3>
+                    <span>{csvRows.length} row(s)</span>
+                  </div>
+
+                  {csvWarnings.length > 0 && (
+                    <div className="warning-box">
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <AlertCircle size={18} color="#8a6b00" />
+                        <strong>CSV warnings detected:</strong>
+                      </div>
+                      <p>{csvWarnings[0]}</p>
+                    </div>
+                  )}
+
+                  <div className="table-scroll">
+                    <table className="preview-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
                           {csvHeaders.map((header) => (
-                            <td key={`${header}-${rowIndex}`}>
-                              <input
-                                type="text"
-                                value={row?.[header] ?? ''}
-                                onChange={(event) => handleCellChange(rowIndex, header, event.target.value)}
-                              />
-                            </td>
+                            <th key={header}>{header}</th>
                           ))}
-                          <td>
-                            <button
-                              type="button"
-                              className="btn-danger"
-                              onClick={() => handleDeleteRow(rowIndex)}
-                            >
-                              Delete
-                            </button>
-                          </td>
+                          <th>Action</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody>
+                        {paginatedCsvRows.map((row, rowOffset) => {
+                          const rowIndex = csvStartIndex + rowOffset;
 
-              <div className="pagination-controls">
-                <span className="pagination-summary">
-                  Showing {csvRows.length === 0 ? 0 : csvStartIndex + 1}-{Math.min(csvStartIndex + ITEMS_PER_PAGE, csvRows.length)} of {csvRows.length}
-                </span>
-                <div className="pagination-buttons">
-                  <button
-                    type="button"
-                    className="pagination-btn"
-                    onClick={() => setCurrentCsvPage((page) => Math.max(1, page - 1))}
-                    disabled={currentCsvPage === 1}
-                  >
-                    Previous
-                  </button>
-                  <span className="pagination-page-indicator">
-                    Page {currentCsvPage} of {totalCsvPages}
-                  </span>
-                  <button
-                    type="button"
-                    className="pagination-btn"
-                    onClick={() => setCurrentCsvPage((page) => Math.min(totalCsvPages, page + 1))}
-                    disabled={currentCsvPage === totalCsvPages}
-                  >
-                    Next
+                          return (
+                            <tr key={`row-${rowIndex}`}>
+                              <td>{rowIndex + 1}</td>
+                              {csvHeaders.map((header) => (
+                                <td key={`${header}-${rowIndex}`}>
+                                  <input
+                                    type="text"
+                                    value={row?.[header] ?? ''}
+                                    onChange={(event) => handleCellChange(rowIndex, header, event.target.value)}
+                                  />
+                                </td>
+                              ))}
+                              <td>
+                                <button
+                                  type="button"
+                                  className="btn-danger"
+                                  onClick={() => handleDeleteRow(rowIndex)}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="pagination-controls">
+                    <span className="pagination-summary">
+                      Showing {csvRows.length === 0 ? 0 : csvStartIndex + 1}-{Math.min(csvStartIndex + ITEMS_PER_PAGE, csvRows.length)} of {csvRows.length}
+                    </span>
+                    <div className="pagination-buttons">
+                      <button
+                        type="button"
+                        className="pagination-btn"
+                        onClick={() => setCurrentCsvPage((page) => Math.max(1, page - 1))}
+                        disabled={currentCsvPage === 1}
+                      >
+                        Previous
+                      </button>
+                      <span className="pagination-page-indicator">
+                        Page {currentCsvPage} of {totalCsvPages}
+                      </span>
+                      <button
+                        type="button"
+                        className="pagination-btn"
+                        onClick={() => setCurrentCsvPage((page) => Math.min(totalCsvPages, page + 1))}
+                        disabled={currentCsvPage === totalCsvPages}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="button" className="btn-add-row" onClick={handleAddRow} style={{ marginTop: '12px' }}>
+                    Add Row
                   </button>
                 </div>
+              )}
+
+              <div className="upload-actions" style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                <button type="submit" className="auth-submit" style={{ flex: 2, margin: 0 }} disabled={loading || parsingCsv || csvRows.length === 0}>
+                  {loading ? 'Generating & Signing...' : 'Generate + Sign'}
+                </button>
+                <button type="button" className="google-auth-btn" style={{ flex: 1 }} onClick={handleReset}>
+                  Reset
+                </button>
               </div>
-
-              <button type="button" className="btn-add-row" onClick={handleAddRow}>
-                Add Row
-              </button>
-            </div>
-          )}
-
-          <div className="upload-actions">
-            <button type="submit" className="btn-primary" disabled={loading || parsingCsv || csvRows.length === 0}>
-              {loading ? 'Generating & Signing...' : 'Generate + Sign Certificates'}
-            </button>
-            <button type="button" className="btn-secondary" onClick={handleReset}>
-              Reset
-            </button>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
 
       {confirmationModal.show && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Confirm Certificate Generation</h2>
-            <p>Generate and sign <strong>{confirmationModal.certCount} certificate(s)</strong> with the edited data?</p>
-            <p style={{ fontSize: '0.9rem', color: '#636e72', marginTop: '12px' }}>This action will create and sign all certificates using the current preview data.</p>
+            <h2>Confirm Generation</h2>
+            <p>Generate and sign <strong>{confirmationModal.certCount} certificate(s)</strong>?</p>
             <div className="modal-actions">
               <button className="cancel-btn" onClick={() => setConfirmationModal({ show: false, certCount: 0 })}>
                 Cancel
               </button>
               <button className="save-btn" onClick={handleConfirmGenerate} disabled={loading}>
-                {loading ? 'Generating...' : 'Generate & Sign'}
+                {loading ? 'Generating...' : 'Confirm'}
               </button>
             </div>
           </div>
