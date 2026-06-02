@@ -28,6 +28,7 @@ const DEFAULT_MARKER_STYLE = {
 
 const FONT_OPTIONS = [
   { label: 'Poppins', value: 'Poppins, sans-serif' },
+  { label: 'Magnolia Script', value: '"Magnolia Script", cursive' },
   { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
   { label: 'Georgia', value: 'Georgia, serif' },
   { label: 'Times New Roman', value: '"Times New Roman", Times, serif' },
@@ -51,7 +52,7 @@ const UploadTemplatePage = () => {
   const [previewOrientation, setPreviewOrientation] = useState('landscape');
   const [activePlaceholderKey, setActivePlaceholderKey] = useState('full_name');
   const [draggingMarkerId, setDraggingMarkerId] = useState(null);
-  const dragStateRef = useRef({ markerId: null, offsetXPct: 0, offsetYPct: 0, pointerId: null });
+  const dragStateRef = useRef({ markerId: null, offsetXpx: 0, offsetYpx: 0, pointerId: null });
   const [placeholderStyles, setPlaceholderStyles] = useState(() => {
     return PLACEHOLDER_OPTIONS.reduce((acc, option) => {
       acc[option.key] = { ...DEFAULT_MARKER_STYLE };
@@ -166,12 +167,13 @@ const UploadTemplatePage = () => {
     if (imageEl && marker) {
       const imageRect = imageEl.getBoundingClientRect();
       if (imageRect.width && imageRect.height) {
-        const pointerXPct = ((e.clientX - imageRect.left) / imageRect.width) * 100;
-        const pointerYPct = ((e.clientY - imageRect.top) / imageRect.height) * 100;
+        // Compute pixel offset from the marker anchor (which is stored in percentages)
+        const anchorPxX = imageRect.left + (marker.xPct / 100) * imageRect.width;
+        const anchorPxY = imageRect.top + (marker.yPct / 100) * imageRect.height;
         dragStateRef.current = {
           markerId,
-          offsetXPct: pointerXPct - marker.xPct,
-          offsetYPct: pointerYPct - marker.yPct,
+          offsetXpx: e.clientX - anchorPxX,
+          offsetYpx: e.clientY - anchorPxY,
           pointerId: e.pointerId
         };
       }
@@ -187,12 +189,15 @@ const UploadTemplatePage = () => {
   };
 
   const handleCanvasPointerMove = (e) => {
-    const { markerId, offsetXPct, offsetYPct } = dragStateRef.current;
+    const { markerId, offsetXpx, offsetYpx } = dragStateRef.current;
     if (!draggingMarkerId || !markerId) return;
     if (!previewImageRef.current) return;
     const imageRect = previewImageRef.current.getBoundingClientRect();
-    const xPct = ((e.clientX - imageRect.left) / imageRect.width) * 100 - offsetXPct;
-    const yPct = ((e.clientY - imageRect.top) / imageRect.height) * 100 - offsetYPct;
+    // Compute anchor pixel coordinates from pointer and stored pixel offset
+    const anchorPxX = e.clientX - offsetXpx;
+    const anchorPxY = e.clientY - offsetYpx;
+    const xPct = ((anchorPxX - imageRect.left) / imageRect.width) * 100;
+    const yPct = ((anchorPxY - imageRect.top) / imageRect.height) * 100;
     const clampedXPct = Math.max(0, Math.min(100, xPct));
     const clampedYPct = Math.max(0, Math.min(100, yPct));
     setMarkers((prev) => prev.map((marker) => {
@@ -455,9 +460,9 @@ const UploadTemplatePage = () => {
                         onChange={(e) => handleStyleChange('align', e.target.value)}
                         style={{ padding: '8px', borderRadius: '8px' }}
                       >
-                        <option value="left">Right</option>
+                        <option value="left">Left</option>
                         <option value="center">Center</option>
-                        <option value="right">Left</option>
+                        <option value="right">Right</option>
                       </select>
                     </label>
                   </div>
