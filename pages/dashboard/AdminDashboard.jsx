@@ -10,6 +10,7 @@ import download from '../../src/Images/download.svg';
 import deleteicon from '../../src/Images/delete.svg';
 import reissue from '../../src/Images/reissue.svg';
 import edit from '../../src/Images/edit.svg';
+import { API_BASE } from '/src/config';
 
 
 
@@ -52,7 +53,6 @@ const AdminDashboard = () => {
   const [currentCertPage, setCurrentCertPage] = useState(1);
 
   const token = localStorage.getItem('token');
-  const API_BASE = "http://127.0.0.1:8000";
 
   useEffect(() => {
     fetchData();

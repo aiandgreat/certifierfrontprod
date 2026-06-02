@@ -8,7 +8,7 @@ import './VerifyPage.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/flagpole.jpg';
 
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE } from '/src/config';
 
 const VerifyPage = () => {
     const navigate = useNavigate();

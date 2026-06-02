@@ -6,6 +6,7 @@ import '../auth/auth.css';
 import './UploadTemplatePage.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/Stacy.jpg';
+import { API_BASE } from '/src/config';
 
 const PLACEHOLDER_OPTIONS = [
   // ... (rest of constants)
@@ -280,7 +281,7 @@ const UploadTemplatePage = () => {
     formData.append('placeholders', JSON.stringify({ version: 1, markers: payloadMarkers }));
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://127.0.0.1:8000/api/templates/', formData, {
+      const response = await axios.post(`${API_BASE}/api/templates/`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.status === 201 || response.status === 200) {

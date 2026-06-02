@@ -6,9 +6,9 @@ import './auth.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/Hotel.jpg';
 
+import { API_BASE } from '/src/config';
 
 const SCHOOL_EMAIL_DOMAIN = '@ua.edu.ph';
-const API_BASE = 'http://127.0.0.1:8000';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ const RegisterPage = () => {
 
     try {
       // Sending data that matches your Django view requirements
-      await axios.post('http://127.0.0.1:8000/api/auth/register/', {
+      await axios.post(`${API_BASE}/api/auth/register/`, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,

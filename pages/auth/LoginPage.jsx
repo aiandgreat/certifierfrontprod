@@ -6,9 +6,9 @@ import './auth.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/birhen.jpg';
 
+import { API_BASE } from '/src/config';
 
 const SCHOOL_EMAIL_DOMAIN = '@ua.edu.ph';
-const API_BASE = 'http://127.0.0.1:8000';
 
 const LoginPage = () => {
   const navigate = useNavigate();

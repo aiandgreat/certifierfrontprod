@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './CertificateCard.css';
+import { API_BASE } from '/src/config';
 
 const CertificateCard = ({ cert }) => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const CertificateCard = ({ cert }) => {
     setLoadingPdf(true);
     try {
       // Note: Ensure the URL ends with a slash / to match Django's urls.py
-      const response = await axios.get(`http://127.0.0.1:8000/api/certificates/${cert.id}/download/`, {
+      const response = await axios.get(`${API_BASE}/api/certificates/${cert.id}/download/`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob' // Essential for PDF files
       });
@@ -67,7 +68,7 @@ const CertificateCard = ({ cert }) => {
     setVerifying(true);
     try {
       // Using the certificate_id string for verification as per your urls.py
-      const response = await axios.get(`http://127.0.0.1:8000/api/verify/${cert.certificate_id}/`, {
+      const response = await axios.get(`${API_BASE}/api/verify/${cert.certificate_id}/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setVerifyStatus(response.data);
