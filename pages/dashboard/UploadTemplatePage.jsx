@@ -277,7 +277,6 @@ const UploadTemplatePage = () => {
     const formData = new FormData();
     formData.append('name', templateName);
     formData.append('background', file);
-    formData.append('placeholders', JSON.stringify({}));
     const payloadMarkers = markers.map(({ previewFontSize, ...marker }) => marker);
     formData.append('placeholders', JSON.stringify({ version: 1, markers: payloadMarkers }));
     try {
