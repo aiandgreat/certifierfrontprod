@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import JSZip from 'jszip';
-import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon } from 'lucide-react';
+import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon, Database } from 'lucide-react';
 import './AdminDashboard.css';
 import PlaceholderImg from '../../src/assets/hero.png';
 import assign from '../../src/Images/assign.svg';
@@ -10,9 +10,8 @@ import download from '../../src/Images/download.svg';
 import deleteicon from '../../src/Images/delete.svg';
 import reissue from '../../src/Images/reissue.svg';
 import edit from '../../src/Images/edit.svg';
+import BulkUploadsPage from './BulkUploadsPage';
 import { API_BASE } from '/src/config';
-
-
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -611,6 +610,7 @@ const AdminDashboard = () => {
         <nav className="admin-nav">
           <button className={`admin-nav-link ${currentView === 'overview' ? 'active' : ''}`} onClick={() => { setCurrentView('overview'); closeMobileNav(); }}><LayoutDashboard size={20} /> Overview</button>
           <button className={`admin-nav-link ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => { setCurrentView('analytics'); closeMobileNav(); }}><BarChart3 size={20} /> Analytics</button>
+          <button className={`admin-nav-link ${currentView === 'uploads' ? 'active' : ''}`} onClick={() => { setCurrentView('uploads'); closeMobileNav(); }}><Database size={20} /> Bulk Uploads</button>
           <Link to="/UploadTemplate" className="admin-nav-link" onClick={closeMobileNav}><FileText size={20} /> Templates</Link>
           <Link to="/CSVUpload" className="admin-nav-link" onClick={closeMobileNav}><Upload size={20} /> Generate Certificate</Link>
           <Link to="/verify" className="admin-nav-link" onClick={closeMobileNav}><ShieldCheck size={20} /> Verify Tool</Link>
@@ -620,8 +620,8 @@ const AdminDashboard = () => {
 
       <main className="admin-main">
         <header>
-          <h1>{currentView === 'overview' ? 'Administrator Dashboard' : 'System Analytics'}</h1>
-          <p>{currentView === 'overview' ? 'Manage users, certificates, and system templates.' : 'Real-time insights into system performance and environmental impact.'}</p>
+          <h1>{currentView === 'overview' ? 'Administrator Dashboard' : currentView === 'analytics' ? 'System Analytics' : 'Bulk Uploads'}</h1>
+          <p>{currentView === 'overview' ? 'Manage users, certificates, and system templates.' : currentView === 'analytics' ? 'Real-time insights into system performance and environmental impact.' : 'View and manage bulk file uploads.'}</p>
         </header>
 
         {currentView === 'overview' ? (
@@ -857,6 +857,8 @@ const AdminDashboard = () => {
               </div>
             </section>
           </>
+        ) : currentView === 'uploads' ? (
+          <BulkUploadsPage />
         ) : (
           renderAnalytics()
         )}

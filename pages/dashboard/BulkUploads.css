@@ -1,0 +1,21 @@
+.upload-details {
+  background: #f1f5f9;
+  padding: 1rem;
+}
+
+.details-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.details-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.85rem;
+  color: #334155;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 4px;
+}
