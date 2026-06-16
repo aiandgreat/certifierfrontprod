@@ -94,11 +94,7 @@ const VerifyPage = () => {
                 setResult(data);
                 if (data.file_url) {
                     try {
-                        const absoluteFileUrl = data.file_url.startsWith('http') 
-                            ? data.file_url 
-                            : `${API_BASE}${data.file_url.startsWith('/') ? '' : '/'}${data.file_url}`;
-                            
-                        const pdfRes = await axios.get(absoluteFileUrl, { responseType: 'blob' });
+                        const pdfRes = await axios.get(data.file_url, { responseType: 'blob' });
                         const blob = new Blob([pdfRes.data], { type: 'application/pdf' });
                         const url = window.URL.createObjectURL(blob);
                         setPdfBlobUrl(url);
