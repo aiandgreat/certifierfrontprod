@@ -10,12 +10,14 @@
   border: 1px solid #e2e8f0;
 }
 
-.details-content pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 0.85rem;
+.upload-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.upload-stats p {
+  margin: 0;
+  font-size: 0.95rem;
   color: #334155;
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: 4px;
 }

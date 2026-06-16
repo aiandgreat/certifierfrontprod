@@ -21,7 +21,8 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const res = await axios.get(`${API_BASE}/api/uploads/`, { headers });
-      setUploads(res.data);
+      const sortedUploads = res.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setUploads(sortedUploads);
     } catch (err) {
       console.error("Error fetching uploads:", err);
     } finally {
@@ -63,7 +64,10 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
                     <td colSpan="4" className="upload-details">
                       <div className="details-content">
                         <h4>Details for {upload.file_name}</h4>
-                        <pre>{JSON.stringify(upload.description || 'No description available', null, 2)}</pre>
+                        <div className="upload-stats">
+                          <p><strong>Total Records:</strong> {upload.total_records || 0}</p>
+                          <p><strong>Processed Records:</strong> {upload.processed_records || 0}</p>
+                        </div>
                       </div>
                     </td>
                   </tr>
