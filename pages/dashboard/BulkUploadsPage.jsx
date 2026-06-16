@@ -10,6 +10,7 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
   const [uploads, setUploads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedUpload, setExpandedUpload] = useState(null);
+  const [modal, setModal] = useState({ show: false, title: '', message: '', onConfirm: null });
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -31,7 +32,6 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
   };
 
   const deleteUpload = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this upload?")) return;
     try {
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(`${API_BASE}/api/uploads/${id}/`, { headers });
@@ -42,10 +42,34 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
     }
   };
 
+  const confirmDelete = (upload) => {
+    setModal({
+      show: true,
+      title: 'Confirm Delete',
+      message: `Are you sure you want to delete ${upload.file_name}? This action cannot be undone.`,
+      onConfirm: () => {
+        deleteUpload(upload.id);
+        setModal({ ...modal, show: false });
+      }
+    });
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
     <section className="admin-table-container">
+      {modal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>{modal.title}</h2>
+            <p>{modal.message}</p>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setModal({ ...modal, show: false })}>Cancel</button>
+              <button className="save-btn" style={{ background: '#D71313' }} onClick={modal.onConfirm}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="table-header"><h3>Bulk Uploads</h3></div>
       <div className="table-responsive">
         <table className="admin-table">
@@ -57,7 +81,7 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
                   <td>{upload.id}</td>
                   <td>{upload.file_name}</td>
                   <td><span className={`badge ${upload.status?.toLowerCase() === 'completed' ? 'valid' : 'invalid'}`}>{upload.status}</span></td>
-                  <td><button className="delete-btn-sm" onClick={(e) => { e.stopPropagation(); deleteUpload(upload.id); }}><Trash2 size={16} /></button></td>
+                  <td><button className="delete-btn-sm" onClick={(e) => { e.stopPropagation(); confirmDelete(upload); }}><Trash2 size={16} /></button></td>
                 </tr>
                 {expandedUpload === upload.id && (
                   <tr>
