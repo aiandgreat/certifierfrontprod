@@ -94,7 +94,11 @@ const VerifyPage = () => {
                 setResult(data);
                 if (data.file_url) {
                     try {
-                        const pdfRes = await axios.get(data.file_url, { responseType: 'blob' });
+                        const absoluteFileUrl = data.file_url.startsWith('http') 
+                            ? data.file_url 
+                            : `${API_BASE}${data.file_url.startsWith('/') ? '' : '/'}${data.file_url}`;
+                            
+                        const pdfRes = await axios.get(absoluteFileUrl, { responseType: 'blob' });
                         const blob = new Blob([pdfRes.data], { type: 'application/pdf' });
                         const url = window.URL.createObjectURL(blob);
                         setPdfBlobUrl(url);
@@ -305,7 +309,19 @@ const VerifyPage = () => {
                                     <div className="preview-action-row">
                                         {pdfBlobUrl && (
                                             <div className="pdf-mini-preview">
-                                                <iframe src={`${pdfBlobUrl}#toolbar=0&navpanes=0`} title="Preview" />
+                                                <object 
+                                                    data={pdfBlobUrl} 
+                                                    type="application/pdf" 
+                                                    className="pdf-object-preview"
+                                                >
+                                                    <div className="pdf-fallback-message">
+                                                        <FileText size={48} color="#94a3b8" />
+                                                        <p>Preview not supported on this device.</p>
+                                                        <a href={pdfBlobUrl} target="_blank" rel="noreferrer" className="fallback-link">
+                                                            Open PDF in new tab
+                                                        </a>
+                                                    </div>
+                                                </object>
                                             </div>
                                         )}
                                         <div className="action-buttons-stack">
