@@ -309,19 +309,7 @@ const VerifyPage = () => {
                                     <div className="preview-action-row">
                                         {pdfBlobUrl && (
                                             <div className="pdf-mini-preview">
-                                                <object 
-                                                    data={pdfBlobUrl} 
-                                                    type="application/pdf" 
-                                                    className="pdf-object-preview"
-                                                >
-                                                    <div className="pdf-fallback-message">
-                                                        <FileText size={48} color="#94a3b8" />
-                                                        <p>Preview not supported on this device.</p>
-                                                        <a href={pdfBlobUrl} target="_blank" rel="noreferrer" className="fallback-link">
-                                                            Open PDF in new tab
-                                                        </a>
-                                                    </div>
-                                                </object>
+                                                <iframe src={`${pdfBlobUrl}#toolbar=0&navpanes=0`} title="Preview" />
                                             </div>
                                         )}
                                         <div className="action-buttons-stack">
