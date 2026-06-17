@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './StudentDashboard.css';
 import { API_BASE } from '/src/config';
+import CertiLogo from '../../src/Images/CertiLogo.png';
 const ITEMS_PER_PAGE = 10;
 
 const StudentDashboard = () => {
@@ -167,8 +168,8 @@ const StudentDashboard = () => {
             <p>Your issued certificates overview.</p>
           </header>
 
-          {/* TABLE */}
-          <section className="student-table-container">
+          {/* CERTIFICATES GRID */}
+          <section className="student-certs-section">
             <h3 className="section-title">My Certificates</h3>
 
             {myCerts.length === 0 ? (
@@ -177,50 +178,49 @@ const StudentDashboard = () => {
                 <p>You don’t have any certificates yet.</p>
               </div>
             ) : (
-              <div className="table-responsive">
-                <table className="student-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Course</th>
-                      <th>Date Issued</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {paginatedCerts.map((cert) => (
-                      <tr key={cert.id}>
-                        <td>#{cert.certificate_id?.toUpperCase()}</td>
-                        <td>{cert.course}</td>
-                        <td>{formatDate(cert.created_at)}</td>
-                        <td>
-                          <span className={`badge ${cert.status?.toLowerCase()}`}>
+              <div className="certs-grid">
+                {paginatedCerts.map((cert) => (
+                  <div key={cert.id} className="cert-badge-card">
+                    <div className="badge-preview-container" onClick={() => handlePreview(cert)}>
+                      <div className="badge-visual">
+                        <div className="badge-outer-ring">
+                          <div className="badge-inner-circle">
+                            <img src={CertiLogo} alt="Badge Logo" className="badge-logo" />
+                          </div>
+                        </div>
+                        <div className="badge-status-ribbon">
+                          <span className={`status-text ${cert.status?.toLowerCase()}`}>
                             {cert.status}
                           </span>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="edit-btn"
-                              onClick={() => handlePreview(cert)}
-                            >
-                              Preview
-                            </button>
+                        </div>
+                      </div>
+                      <div className="hover-overlay">
+                        <span>Click to Preview</span>
+                      </div>
+                    </div>
+                    
+                    <div className="cert-info">
+                      <h4 className="cert-course-name">{cert.course}</h4>
+                      <p className="cert-id-text">ID: {cert.certificate_id?.toUpperCase()}</p>
+                      <p className="cert-date">Issued: {formatDate(cert.created_at)}</p>
+                    </div>
 
-                            <button
-                              className="save-btn"
-                              onClick={() => handleDownload(cert)}
-                            >
-                              Download
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    <div className="cert-actions">
+                      <button
+                        className="btn-preview-small"
+                        onClick={() => handlePreview(cert)}
+                      >
+                        Preview
+                      </button>
+                      <button
+                        className="btn-download-small"
+                        onClick={() => handleDownload(cert)}
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
