@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react';
 import './StudentDashboard.css';
 import { API_BASE } from '/src/config';
 import CertiLogo from '../../src/Images/CertiLogo.png';
@@ -145,15 +146,15 @@ const StudentDashboard = () => {
 
         <nav className="student-nav">
           <Link to="/StudentDashboard" className="student-nav-link active" onClick={closeMobileNav}>
-            Dashboard
+            <LayoutDashboard size={20} /> Dashboard
           </Link>
           <Link to="/verify" className="student-nav-link" onClick={closeMobileNav}>
-            Verify
+            <ShieldCheck size={20} /> Verify
           </Link>
         </nav>
 
         <button className="logout-btn" onClick={handleLogout}>
-          Logout
+          <LogOut size={20} /> Logout
         </button>
       </aside>
 
@@ -182,27 +183,25 @@ const StudentDashboard = () => {
                 {paginatedCerts.map((cert) => (
                   <div key={cert.id} className="cert-badge-card">
                     <div className="badge-preview-container" onClick={() => handlePreview(cert)}>
-                      <div className="badge-visual">
-                        <div className="badge-outer-ring">
-                          <div className="badge-inner-circle">
-                            <img src={CertiLogo} alt="Badge Logo" className="badge-logo" />
-                          </div>
-                        </div>
-                        <div className="badge-status-ribbon">
-                          <span className={`status-text ${cert.status?.toLowerCase()}`}>
-                            {cert.status}
-                          </span>
+                      <div className="badge-outer-ring">
+                        <div className="badge-inner-circle">
+                          <img src={CertiLogo} alt="Badge Logo" className="badge-logo" />
                         </div>
                       </div>
+                      <div className="badge-status-ribbon">
+                        <span className={`status-text ${cert.status?.toLowerCase()}`}>
+                          {cert.status || 'Active'}
+                        </span>
+                      </div>
                       <div className="hover-overlay">
-                        <span>Click to Preview</span>
+                        <span>Preview</span>
                       </div>
                     </div>
                     
                     <div className="cert-info">
                       <h4 className="cert-course-name">{cert.course}</h4>
-                      <p className="cert-id-text">ID: {cert.certificate_id?.toUpperCase()}</p>
-                      <p className="cert-date">Issued: {formatDate(cert.created_at)}</p>
+                      <p className="cert-id-text">{cert.certificate_id?.toUpperCase()}</p>
+                      <p className="cert-date">Issued on {formatDate(cert.created_at)}</p>
                     </div>
 
                     <div className="cert-actions">
@@ -210,7 +209,7 @@ const StudentDashboard = () => {
                         className="btn-preview-small"
                         onClick={() => handlePreview(cert)}
                       >
-                        Preview
+                        Details
                       </button>
                       <button
                         className="btn-download-small"
