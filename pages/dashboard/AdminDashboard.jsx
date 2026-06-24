@@ -84,12 +84,14 @@ const AdminDashboard = () => {
       const uploadsData = await safeGet(`${API_BASE}/api/uploads/`);
       const tmplsData = await safeGet(`${API_BASE}/api/templates/`);
 
+      const studentUsers = usersData.filter((user) => user.role !== 'admin');
+
       setRecentCerts(certsData);
       setTemplates(tmplsData);
-      setUsers(usersData);
+      setUsers(studentUsers);
       setStats({
         totalCerts: certsData.length,
-        totalUsers: usersData.length,
+        totalUsers: studentUsers.length,
         uploads: uploadsData.length
       });
     } catch (err) {
