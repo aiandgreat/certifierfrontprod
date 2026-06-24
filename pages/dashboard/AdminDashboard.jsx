@@ -147,7 +147,9 @@ const AdminDashboard = () => {
 
   const getOwnerDisplay = (cert) => {
     const ownerId = getOwnerId(cert);
-    if (!ownerId) return 'Unassigned';
+    if (!ownerId) {
+      return cert.recipient_email ? `Unassigned (${cert.recipient_email})` : 'Unassigned';
+    }
     const matchedUser = users.find((user) => String(user.id) === ownerId);
     if (matchedUser) return getUserLabel(matchedUser);
     if (typeof cert.owner === 'object') {
