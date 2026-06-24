@@ -155,7 +155,7 @@ const VerifyPage = () => {
                 canvas.height = height;
                 context.drawImage(video, 0, 0, width, height);
                 const imageData = context.getImageData(0, 0, width, height);
-                const code = jsQR(imageData.data, width, height, { inversionAttempts: 'dontInvert' });
+                const code = jsQR(imageData.data, width, height, { inversionAttempts: 'attemptBoth' });
                 if (code?.data) {
                     const scannedValue = normalizeScannedCertificateId(code.data);
                     setCertId(scannedValue);
