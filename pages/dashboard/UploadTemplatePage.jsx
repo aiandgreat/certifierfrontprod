@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, CheckCircle2, AlertCircle, FileText, Settings, Type } from 'lucide-react';
 import '../auth/auth.css';
@@ -43,11 +43,15 @@ const FONT_STYLE_OPTIONS = [
 ];
 
 const UploadTemplatePage = () => {
-  const navigate = useNavigate(); // Idinagdag ito
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const [file, setFile] = useState(null);
   const [templateName, setTemplateName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [eventLogoFile, setEventLogoFile] = useState(null);
+  const [eventLogoPreview, setEventLogoPreview] = useState('');
   const [markers, setMarkers] = useState([]);
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewOrientation, setPreviewOrientation] = useState('landscape');
@@ -67,11 +71,51 @@ const UploadTemplatePage = () => {
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      if (previewUrl && !previewUrl.startsWith('http')) {
         URL.revokeObjectURL(previewUrl);
       }
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchTemplate = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(`${API_BASE}/api/templates/${id}/`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = response.data;
+          setTemplateName(data.name);
+          setPreviewUrl(data.background);
+          
+          if (data.event_logo) {
+            setEventLogoPreview(data.event_logo);
+          }
+
+          const rawMarkers = data.placeholders?.markers || [];
+          setMarkers(rawMarkers);
+
+          const nextStyles = { ...placeholderStyles };
+          rawMarkers.forEach(marker => {
+            nextStyles[marker.key] = {
+              fontSize: marker.previewFontSize ?? marker.fontSize,
+              color: marker.color,
+              align: marker.align,
+              fontFamily: marker.fontFamily || DEFAULT_MARKER_STYLE.fontFamily,
+              fontStyle: marker.fontStyle || DEFAULT_MARKER_STYLE.fontStyle,
+              fontWeight: marker.fontWeight || DEFAULT_MARKER_STYLE.fontWeight
+            };
+          });
+          setPlaceholderStyles(nextStyles);
+        } catch (error) {
+          console.error("Error fetching template:", error);
+          setMessage({ type: 'error', text: 'Failed to load template details.' });
+        }
+      };
+      fetchTemplate();
+    }
+  }, [id, isEditMode]);
 
   const getPlaceholderMeta = (key) => {
     return PLACEHOLDER_OPTIONS.find((option) => option.key === key) || PLACEHOLDER_OPTIONS[0];
@@ -268,40 +312,71 @@ const UploadTemplatePage = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file || !templateName) {
-      setMessage({ type: 'error', text: 'Please provide both name and file.' });
+    if (!templateName) {
+      setMessage({ type: 'error', text: 'Please provide template name.' });
+      return;
+    }
+    if (!isEditMode && !file) {
+      setMessage({ type: 'error', text: 'Please provide a background template file.' });
       return;
     }
     setLoading(true);
     setMessage({ type: '', text: '' });
     const formData = new FormData();
     formData.append('name', templateName);
-    formData.append('background', file);
+    if (file) {
+      formData.append('background', file);
+    }
+    if (eventLogoFile) {
+      formData.append('event_logo', eventLogoFile);
+    }
     const payloadMarkers = markers.map(({ previewFontSize, ...marker }) => marker);
     formData.append('placeholders', JSON.stringify({ version: 1, markers: payloadMarkers }));
+    
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_BASE}/api/templates/`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.status === 201 || response.status === 200) {
-        setMessage({ type: 'success', text: 'Template uploaded successfully!' });
-        setFile(null);
-        setTemplateName('');
-        setMarkers([]);
-        setPlaceholderStyles(PLACEHOLDER_OPTIONS.reduce((acc, option) => {
-          acc[option.key] = { ...DEFAULT_MARKER_STYLE };
-          return acc;
-        }, {}));
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl('');
+      const url = isEditMode ? `${API_BASE}/api/templates/${id}/` : `${API_BASE}/api/templates/`;
+      const method = isEditMode ? 'patch' : 'post';
+      
+      const response = await axios({
+        method,
+        url,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-        if (fileInputRef.current) fileInputRef.current.value = '';
+      });
+      
+      if (response.status === 201 || response.status === 200) {
+        setMessage({ 
+          type: 'success', 
+          text: isEditMode ? 'Template updated successfully!' : 'Template uploaded successfully!' 
+        });
+        
+        if (isEditMode) {
+          setTimeout(() => navigate('/AdminDashboard'), 1500);
+        } else {
+          setFile(null);
+          setEventLogoFile(null);
+          setEventLogoPreview('');
+          setTemplateName('');
+          setMarkers([]);
+          setPlaceholderStyles(PLACEHOLDER_OPTIONS.reduce((acc, option) => {
+            acc[option.key] = { ...DEFAULT_MARKER_STYLE };
+            return acc;
+          }, {}));
+          if (previewUrl) {
+            if (!previewUrl.startsWith('http')) {
+              URL.revokeObjectURL(previewUrl);
+            }
+            setPreviewUrl('');
+          }
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
       }
     } catch (error) {
       const serverErr = error.response?.data;
-      const errorText = serverErr ? Object.keys(serverErr).map(k => `${k.toUpperCase()}: ${Array.isArray(serverErr[k]) ? serverErr[k].join(', ') : serverErr[k]}`).join(' | ') : 'Upload failed.';
+      const errorText = serverErr ? Object.keys(serverErr).map(k => `${k.toUpperCase()}: ${Array.isArray(serverErr[k]) ? serverErr[k].join(', ') : serverErr[k]}`).join(' | ') : 'Operation failed.';
       setMessage({ type: 'error', text: errorText });
     } finally {
       setLoading(false);
@@ -356,8 +431,8 @@ const UploadTemplatePage = () => {
         <div className="auth-form-section">
           <div className="auth-card wide">
             <div className="auth-header">
-              <h2>Upload Template</h2>
-              <p>Fill in the details to register your certificate design.</p>
+              <h2>{isEditMode ? 'Edit Template' : 'Upload Template'}</h2>
+              <p>{isEditMode ? 'Modify your template design and layout.' : 'Fill in the details to register your certificate design.'}</p>
             </div>
 
             <form className="auth-form" onSubmit={handleUpload}>
@@ -373,6 +448,31 @@ const UploadTemplatePage = () => {
                 />
               </div>
 
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label>Event/Competition Logo (Optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const selectedFile = e.target.files[0];
+                    if (selectedFile) {
+                      setEventLogoFile(selectedFile);
+                      if (eventLogoPreview && !eventLogoPreview.startsWith('http')) {
+                        URL.revokeObjectURL(eventLogoPreview);
+                      }
+                      setEventLogoPreview(URL.createObjectURL(selectedFile));
+                    }
+                  }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#fff' }}
+                />
+                {eventLogoPreview && (
+                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Selected Logo Preview:</p>
+                    <img src={eventLogoPreview} alt="Event logo preview" style={{ height: '40px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '4px', padding: '2px' }} />
+                  </div>
+                )}
+              </div>
+
               <div className="drop-zone" onClick={() => fileInputRef.current?.click()} style={{ cursor: 'pointer' }}>
                 <input
                   type="file"
@@ -383,7 +483,7 @@ const UploadTemplatePage = () => {
                 />
                 <div className="drop-zone-label">
                   <FileText className="upload-icon" size={48} style={{ margin: '0 auto 12px', color: '#0D1282' }} />
-                  {file ? <strong>{file.name}</strong> : <p>Click to upload Background Image</p>}
+                  {file ? <strong>{file.name}</strong> : <p>{isEditMode ? 'Click to upload a new Background Image (optional)' : 'Click to upload Background Image'}</p>}
                 </div>
               </div>
 
@@ -528,7 +628,7 @@ const UploadTemplatePage = () => {
               )}
 
               <button type="submit" className="auth-submit" disabled={loading} style={{ marginTop: '24px' }}>
-                {loading ? 'Uploading Template...' : 'Confirm Upload'}
+                {loading ? (isEditMode ? 'Updating Template...' : 'Uploading Template...') : (isEditMode ? 'Update Template' : 'Confirm Upload')}
               </button>
             </form>
           </div>

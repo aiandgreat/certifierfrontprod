@@ -756,7 +756,13 @@ const AdminDashboard = () => {
                     {paginatedTemplates.map((template) => (
                       <div key={template.id} className="template-card">
                         <div className="template-preview1"><img src={getFullUrl(template.background)} alt={template.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }} /></div>
-                        <div className="template-info"><h4>{template.name}</h4><button className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button></div>
+                        <div className="template-info">
+                          <h4>{template.name}</h4>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', width: '100%' }}>
+                            <button type="button" className="edit-btn-sm" onClick={() => navigate(`/EditTemplate/${template.id}`)}>Edit</button>
+                            <button type="button" className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

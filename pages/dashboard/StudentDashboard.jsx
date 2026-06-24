@@ -185,7 +185,12 @@ const StudentDashboard = () => {
                     <div className="badge-preview-container" onClick={() => handlePreview(cert)}>
                       <div className="badge-outer-ring">
                         <div className="badge-inner-circle">
-                          <img src={CertiLogo} alt="Badge Logo" className="badge-logo" />
+                          <img 
+                            src={cert.template_details?.event_logo ? cert.template_details.event_logo : CertiLogo} 
+                            alt="Badge Logo" 
+                            className="badge-logo" 
+                            style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: '50%' }}
+                          />
                         </div>
                       </div>
                       <div className="badge-status-ribbon">
