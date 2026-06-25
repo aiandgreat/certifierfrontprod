@@ -58,6 +58,27 @@ const UploadTemplatePage = () => {
   const [activePlaceholderKey, setActivePlaceholderKey] = useState('full_name');
   const [draggingMarkerId, setDraggingMarkerId] = useState(null);
   const dragStateRef = useRef({ markerId: null, offsetXpx: 0, offsetYpx: 0, pointerId: null });
+
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const userRole = localStorage.getItem('user_role');
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_BASE}/api/departments/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDepartments(response.data);
+      } catch (err) {
+        console.error("Error fetching departments", err);
+      }
+    };
+    if (userRole === 'admin') {
+      fetchDepartments();
+    }
+  }, [userRole]);
   const [placeholderStyles, setPlaceholderStyles] = useState(() => {
     return PLACEHOLDER_OPTIONS.reduce((acc, option) => {
       acc[option.key] = { ...DEFAULT_MARKER_STYLE };
@@ -88,6 +109,9 @@ const UploadTemplatePage = () => {
           const data = response.data;
           setTemplateName(data.name);
           setPreviewUrl(data.background);
+          if (data.department) {
+            setSelectedDepartment(data.department);
+          }
           
           if (data.event_logo) {
             setEventLogoPreview(data.event_logo);
@@ -320,10 +344,20 @@ const UploadTemplatePage = () => {
       setMessage({ type: 'error', text: 'Please provide a background template file.' });
       return;
     }
+    const userRole = localStorage.getItem('user_role');
+    if (userRole === 'admin' && !selectedDepartment) {
+      setMessage({ type: 'error', text: 'Please select a department.' });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setMessage({ type: '', text: '' });
     const formData = new FormData();
     formData.append('name', templateName);
+    if (selectedDepartment) {
+      formData.append('department', selectedDepartment);
+    }
     if (file) {
       formData.append('background', file);
     }
@@ -447,6 +481,35 @@ const UploadTemplatePage = () => {
                   style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0' }}
                 />
               </div>
+
+              {userRole === 'admin' ? (
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label>Department</label>
+                  <select
+                    value={selectedDepartment}
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#fff' }}
+                  >
+                    <option value="">Select a Department</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name} ({dept.abbreviation})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : userRole === 'sub_admin' ? (
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label>Department</label>
+                  <input
+                    type="text"
+                    value={`${localStorage.getItem('department_name') || ''} (${localStorage.getItem('department_abbreviation') || ''})`}
+                    disabled
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#64748b' }}
+                  />
+                </div>
+              ) : null}
 
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label>Event/Competition Logo (Optional)</label>

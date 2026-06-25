@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import JSZip from 'jszip';
-import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon, Database } from 'lucide-react';
+import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon, Database, Building2 } from 'lucide-react';
 import './AdminDashboard.css';
 import PlaceholderImg from '../../src/assets/hero.png';
 import assign from '../../src/Images/assign.svg';
@@ -24,13 +24,17 @@ const AdminDashboard = () => {
   const [recentCerts, setRecentCerts] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // States para sa Editing
   const [editingUser, setEditingUser] = useState(null);
+  const [editingDept, setEditingDept] = useState(null);
+  const [newDeptForm, setNewDeptForm] = useState({ name: '', abbreviation: '' });
   const [editUserFormData, setEditUserFormData] = useState({
-    first_name: '', last_name: '', email: '', username: '', role: ''
+    first_name: '', last_name: '', email: '', username: '', role: '', department: ''
   });
+  const userRole = localStorage.getItem('user_role');
 
   // UI States
   const [modal, setModal] = useState({ show: false, type: '', title: '', message: '', onConfirm: null });
@@ -59,7 +63,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     const role = localStorage.getItem('user_role');
-    if (!token || role !== 'admin') {
+    if (!token || (role !== 'admin' && role !== 'sub_admin')) {
       navigate('/login');
       return;
     }
@@ -83,12 +87,14 @@ const AdminDashboard = () => {
       const usersData = await safeGet(`${API_BASE}/api/users/`);
       const uploadsData = await safeGet(`${API_BASE}/api/uploads/`);
       const tmplsData = await safeGet(`${API_BASE}/api/templates/`);
+      const deptsData = await safeGet(`${API_BASE}/api/departments/`);
 
       const studentUsers = usersData.filter((user) => user.role !== 'admin');
 
       setRecentCerts(certsData);
       setTemplates(tmplsData);
       setUsers(studentUsers);
+      setDepartments(deptsData);
       setStats({
         totalCerts: certsData.length,
         totalUsers: studentUsers.length,
@@ -613,8 +619,13 @@ const AdminDashboard = () => {
         <h2>CertiFier</h2>
         <nav className="admin-nav">
           <button className={`admin-nav-link ${currentView === 'overview' ? 'active' : ''}`} onClick={() => { setCurrentView('overview'); closeMobileNav(); }}><LayoutDashboard size={20} /> Overview</button>
-          <button className={`admin-nav-link ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => { setCurrentView('analytics'); closeMobileNav(); }}><BarChart3 size={20} /> Analytics</button>
+          {userRole === 'admin' && (
+            <button className={`admin-nav-link ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => { setCurrentView('analytics'); closeMobileNav(); }}><BarChart3 size={20} /> Analytics</button>
+          )}
           <button className={`admin-nav-link ${currentView === 'uploads' ? 'active' : ''}`} onClick={() => { setCurrentView('uploads'); closeMobileNav(); }}><Database size={20} /> Bulk Uploads</button>
+          {userRole === 'admin' && (
+            <button className={`admin-nav-link ${currentView === 'departments' ? 'active' : ''}`} onClick={() => { setCurrentView('departments'); closeMobileNav(); }}><Building2 size={20} /> Departments</button>
+          )}
           <Link to="/UploadTemplate" className="admin-nav-link" onClick={closeMobileNav}><FileText size={20} /> Templates</Link>
           <Link to="/CSVUpload" className="admin-nav-link" onClick={closeMobileNav}><Upload size={20} /> Generate Certificate</Link>
           <Link to="/verify" className="admin-nav-link" onClick={closeMobileNav}><ShieldCheck size={20} /> Verify Tool</Link>
@@ -624,15 +635,27 @@ const AdminDashboard = () => {
 
       <main className="admin-main">
         <header>
-          <h1>{currentView === 'overview' ? 'Administrator Dashboard' : currentView === 'analytics' ? 'System Analytics' : 'Bulk Uploads'}</h1>
-          <p>{currentView === 'overview' ? 'Manage users, certificates, and system templates.' : currentView === 'analytics' ? 'Real-time insights into system performance and environmental impact.' : 'View and manage bulk file uploads.'}</p>
+          <h1>{
+            currentView === 'overview' ? (userRole === 'admin' ? 'Administrator Dashboard' : `Sub-Admin Dashboard - ${localStorage.getItem('department_abbreviation') || ''}`) :
+            currentView === 'analytics' ? 'System Analytics' :
+            currentView === 'uploads' ? 'Bulk Uploads' :
+            currentView === 'departments' ? 'Department Management' : ''
+          }</h1>
+          <p>{
+            currentView === 'overview' ? (userRole === 'admin' ? 'Manage users, certificates, and system templates.' : 'Manage department certificates and templates.') :
+            currentView === 'analytics' ? 'Real-time insights into system performance and environmental impact.' :
+            currentView === 'uploads' ? 'View and manage bulk file uploads.' :
+            currentView === 'departments' ? 'Add and manage university departments.' : ''
+          }</p>
         </header>
 
         {currentView === 'overview' ? (
           <>
             <section className="admin-stats-grid">
               <div className="admin-stat-card"><h3>{stats.totalCerts}</h3><p>Certificates Issued</p></div>
-              <div className="admin-stat-card"><h3>{stats.totalUsers}</h3><p>Registered Users</p></div>
+              {userRole === 'admin' && (
+                <div className="admin-stat-card"><h3>{stats.totalUsers}</h3><p>Registered Users</p></div>
+              )}
               <div className="admin-stat-card"><h3>{stats.uploads}</h3><p>Bulk Uploads</p></div>
             </section>
 
@@ -686,67 +709,106 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            <section className="admin-table-container">
-              <div className="table-header"><h3>Registered Users</h3><input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="table-search-input" /></div>
-              <div className="table-responsive">
-                <table className="admin-table">
-                  <thead><tr><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {paginatedUsers.map((user) => (
-                      <tr key={user.id}>
-                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.first_name} onChange={e => setEditUserFormData({ ...editUserFormData, first_name: e.target.value })} /> : user.first_name}</td>
-                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.last_name} onChange={e => setEditUserFormData({ ...editUserFormData, last_name: e.target.value })} /> : user.last_name}</td>
-                        <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.email} onChange={e => setEditUserFormData({ ...editUserFormData, email: e.target.value })} /> : user.email}</td>
-                        <td><span className={`badge ${user.role === 'admin' ? 'invalid' : 'valid'}`}>{user.role?.toUpperCase()}</span></td>
-                        <td>
-                          <div className="action-buttons">
-                            {editingUser === user.id ? (
-                              <><button className="save-btn" onClick={() => handleSaveUserEdit(user.id)}>Save</button><button className="cancel-btn" onClick={() => setEditingUser(null)}>                                    
-                              Cancel</button></>
+            {userRole === 'admin' && (
+              <section className="admin-table-container">
+                <div className="table-header"><h3>Registered Users</h3><input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="table-search-input" /></div>
+                <div className="table-responsive">
+                  <table className="admin-table">
+                    <thead><tr><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th>Department</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {paginatedUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.first_name} onChange={e => setEditUserFormData({ ...editUserFormData, first_name: e.target.value })} /> : user.first_name}</td>
+                          <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.last_name} onChange={e => setEditUserFormData({ ...editUserFormData, last_name: e.target.value })} /> : user.last_name}</td>
+                          <td>{editingUser === user.id ? <input className="edit-input" value={editUserFormData.email} onChange={e => setEditUserFormData({ ...editUserFormData, email: e.target.value })} /> : user.email}</td>
+                          <td>{editingUser === user.id ? (
+                            <select
+                              className="edit-input"
+                              value={editUserFormData.role}
+                              onChange={e => setEditUserFormData({ ...editUserFormData, role: e.target.value })}
+                            >
+                              <option value="student">Student</option>
+                              <option value="sub_admin">Sub-Administrator</option>
+                              <option value="admin">Administrator</option>
+                            </select>
+                          ) : (
+                            <span className="badge" style={
+                              user.role === 'admin' ? { background: '#FDE8E8', color: '#E02424' } :
+                              user.role === 'sub_admin' ? { background: '#FEF3C7', color: '#D97706' } :
+                              { background: '#E2F6CA', color: '#70B817' }
+                            }>
+                              {user.role === 'sub_admin' ? 'SUB-ADMIN' : user.role?.toUpperCase()}
+                            </span>
+                          )}</td>
+                          <td>{editingUser === user.id ? (
+                            editUserFormData.role === 'sub_admin' ? (
+                              <select
+                                className="edit-input"
+                                value={editUserFormData.department || ''}
+                                onChange={e => setEditUserFormData({ ...editUserFormData, department: e.target.value })}
+                              >
+                                <option value="">Select Department</option>
+                                {departments.map((dept) => (
+                                  <option key={dept.id} value={dept.id}>{dept.abbreviation}</option>
+                                ))}
+                              </select>
                             ) : (
-                              <>
-                                <button
-                                  className="edit-btn"
-                                  onClick={() => {
-                                    setEditingUser(user.id);
-                                    setEditUserFormData({
-                                      first_name: user.first_name,
-                                      last_name: user.last_name,
-                                      email: user.email,
-                                      username: user.username,
-                                      role: user.role
-                                    });
-                                  }}
-                                >
-                                  <img src={edit} alt="" style={{ width: 16, height: 16 }} />
-                                </button>
-
-                                {user.role !== 'admin' && (
+                              <span style={{ color: '#94a3b8' }}>—</span>
+                            )
+                          ) : (
+                            user.department_details?.abbreviation || <span style={{ color: '#94a3b8' }}>—</span>
+                          )}</td>
+                          <td>
+                            <div className="action-buttons">
+                              {editingUser === user.id ? (
+                                <><button className="save-btn" onClick={() => handleSaveUserEdit(user.id)}>Save</button><button className="cancel-btn" onClick={() => setEditingUser(null)}>                                    
+                                Cancel</button></>
+                              ) : (
+                                <>
                                   <button
-                                    className="delete-btn"
-                                    onClick={() => handleDelete(user.id, 'user')}
+                                    className="edit-btn"
+                                    onClick={() => {
+                                      setEditingUser(user.id);
+                                      setEditUserFormData({
+                                        first_name: user.first_name,
+                                        last_name: user.last_name,
+                                        email: user.email,
+                                        username: user.username,
+                                        role: user.role,
+                                        department: user.department || ''
+                                      });
+                                    }}
                                   >
-                                    <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
+                                    <img src={edit} alt="" style={{ width: 16, height: 16 }} />
                                   </button>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="pagination-controls">
-                <span className="pagination-summary">Showing {filteredUsers.length === 0 ? 0 : (currentUserPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentUserPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}</span>
-                <div className="pagination-buttons">
-                  <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.max(1, page - 1))} disabled={currentUserPage === 1}>Previous</button>
-                  <span className="pagination-page-indicator">Page {currentUserPage} of {Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}</span>
-                  <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.min(Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)), page + 1))} disabled={currentUserPage >= Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}>Next</button>
+
+                                  {user.role !== 'admin' && (
+                                    <button
+                                      className="delete-btn"
+                                      onClick={() => handleDelete(user.id, 'user')}
+                                    >
+                                      <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-            </section>
+                <div className="pagination-controls">
+                  <span className="pagination-summary">Showing {filteredUsers.length === 0 ? 0 : (currentUserPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentUserPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}</span>
+                  <div className="pagination-buttons">
+                    <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.max(1, page - 1))} disabled={currentUserPage === 1}>Previous</button>
+                    <span className="pagination-page-indicator">Page {currentUserPage} of {Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}</span>
+                    <button className="pagination-btn" onClick={() => setCurrentUserPage((page) => Math.min(Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)), page + 1))} disabled={currentUserPage >= Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))}>Next</button>
+                  </div>
+                </div>
+              </section>
+            )}
 
             <section className="admin-table-container">
               <div className="table-header"><h3>System Templates</h3><input type="text" placeholder="Search templates..." value={templateSearch} onChange={(e) => setTemplateSearch(e.target.value)} className="table-search-input" /></div>
@@ -757,8 +819,13 @@ const AdminDashboard = () => {
                       <div key={template.id} className="template-card">
                         <div className="template-preview1"><img src={getFullUrl(template.background)} alt={template.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PlaceholderImg; }} /></div>
                         <div className="template-info">
-                          <h4>{template.name}</h4>
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', width: '100%' }}>
+                          <h4 style={{ marginBottom: '4px' }}>{template.name}</h4>
+                          {template.department_details && (
+                            <span className="badge" style={{ background: '#E2F6CA', color: '#70B817', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginBottom: '8px' }}>
+                              {template.department_details.abbreviation}
+                            </span>
+                          )}
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '4px', width: '100%' }}>
                             <button type="button" className="edit-btn-sm" onClick={() => navigate(`/EditTemplate/${template.id}`)}>Edit</button>
                             <button type="button" className="delete-btn-sm" onClick={() => handleDelete(template.id, 'template')}>Delete</button>
                           </div>
@@ -838,7 +905,7 @@ const AdminDashboard = () => {
               </div>
               <div className="table-responsive">
                 <table className="admin-table">
-                  <thead><tr><th style={{ width: '40px' }}><input type="checkbox" checked={paginatedRecentCerts.length > 0 && paginatedRecentCerts.every((cert) => selectedCerts.has(cert.id))} onChange={toggleSelectAll} title="Select all" /></th><th>Full ID</th><th>Recipient</th><th>Course</th><th>Owner</th></tr></thead>
+                  <thead><tr><th style={{ width: '40px' }}><input type="checkbox" checked={paginatedRecentCerts.length > 0 && paginatedRecentCerts.every((cert) => selectedCerts.has(cert.id))} onChange={toggleSelectAll} title="Select all" /></th><th>Full ID</th><th>Recipient</th><th>Course</th><th>Department</th><th>Owner</th></tr></thead>
                   <tbody>
                     {paginatedRecentCerts.map((cert) => (
                       <tr
@@ -851,6 +918,7 @@ const AdminDashboard = () => {
                         <td>#{cert.certificate_id?.toUpperCase()}</td>
                         <td>{cert.full_name}</td>
                         <td>{cert.course}</td>
+                        <td>{cert.department_details?.abbreviation || '—'}</td>
                         <td>{getOwnerDisplay(cert)}</td>
                       </tr>
                     ))}
@@ -869,6 +937,151 @@ const AdminDashboard = () => {
           </>
         ) : currentView === 'uploads' ? (
           <BulkUploadsPage />
+        ) : currentView === 'departments' && userRole === 'admin' ? (
+          <section className="admin-table-container">
+            <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>University Departments</h3>
+            </div>
+            
+            <div className="dept-mgmt-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px', padding: '20px' }}>
+              {/* Form to Add Department */}
+              <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ marginBottom: '16px', color: '#0F172A' }}>Add New Department</h4>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!newDeptForm.name || !newDeptForm.abbreviation) {
+                    showToast('Please fill all fields');
+                    return;
+                  }
+                  try {
+                    const headers = { Authorization: `Bearer ${token}` };
+                    await axios.post(`${API_BASE}/api/departments/`, newDeptForm, { headers });
+                    showToast('Department added successfully!');
+                    setNewDeptForm({ name: '', abbreviation: '' });
+                    fetchData();
+                  } catch (err) {
+                    console.error(err);
+                    showToast('Failed to add department');
+                  }
+                }}>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px' }}>Department Name</label>
+                    <input
+                      type="text"
+                      className="edit-input"
+                      placeholder="e.g. College of Information Technology"
+                      value={newDeptForm.name}
+                      onChange={(e) => setNewDeptForm({ ...newDeptForm, name: e.target.value })}
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1.5px solid #e2e8f0', background: '#fff' }}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px' }}>Abbreviation</label>
+                    <input
+                      type="text"
+                      className="edit-input"
+                      placeholder="e.g. CIT"
+                      value={newDeptForm.abbreviation}
+                      onChange={(e) => setNewDeptForm({ ...newDeptForm, abbreviation: e.target.value })}
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1.5px solid #e2e8f0', background: '#fff' }}
+                    />
+                  </div>
+                  <button type="submit" className="save-btn" style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer', background: '#0D1282' }}>
+                    Add Department
+                  </button>
+                </form>
+              </div>
+
+              {/* Departments List Table */}
+              <div className="table-responsive" style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Department Name</th>
+                      <th>Abbreviation</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {departments.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="no-data" style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>No departments registered.</td>
+                      </tr>
+                    ) : (
+                      departments.map((dept) => (
+                        <tr key={dept.id}>
+                          <td>{editingDept === dept.id ? (
+                            <input
+                              className="edit-input"
+                              value={dept.name}
+                              onChange={(e) => {
+                                const updated = departments.map(d => d.id === dept.id ? { ...d, name: e.target.value } : d);
+                                setDepartments(updated);
+                              }}
+                              style={{ width: '100%', padding: '6px' }}
+                            />
+                          ) : dept.name}</td>
+                          <td>{editingDept === dept.id ? (
+                            <input
+                              className="edit-input"
+                              value={dept.abbreviation}
+                              onChange={(e) => {
+                                const updated = departments.map(d => d.id === dept.id ? { ...d, abbreviation: e.target.value } : d);
+                                setDepartments(updated);
+                              }}
+                              style={{ width: '100%', padding: '6px' }}
+                            />
+                          ) : dept.abbreviation}</td>
+                          <td>
+                            <div className="action-buttons">
+                              {editingDept === dept.id ? (
+                                <>
+                                  <button className="save-btn" onClick={async () => {
+                                    try {
+                                      const headers = { Authorization: `Bearer ${token}` };
+                                      await axios.patch(`${API_BASE}/api/departments/${dept.id}/`, dept, { headers });
+                                      setEditingDept(null);
+                                      showToast('Department updated!');
+                                      fetchData();
+                                    } catch (err) {
+                                      alert("Error updating department");
+                                    }
+                                  }}>Save</button>
+                                  <button className="cancel-btn" onClick={() => setEditingDept(null)}>Cancel</button>
+                                </>
+                              ) : (
+                                <>
+                                  <button className="edit-btn" onClick={() => setEditingDept(dept.id)}>
+                                    <img src={edit} alt="Edit" style={{ width: 16, height: 16 }} />
+                                  </button>
+                                  <button className="delete-btn" onClick={async () => {
+                                    if (window.confirm("Are you sure you want to delete this department?")) {
+                                      try {
+                                        const headers = { Authorization: `Bearer ${token}` };
+                                        await axios.delete(`${API_BASE}/api/departments/${dept.id}/`, { headers });
+                                        showToast('Department deleted!');
+                                        fetchData();
+                                      } catch (err) {
+                                        alert("Error deleting department");
+                                      }
+                                    }
+                                  }}>
+                                    <img src={deleteicon} alt="Delete" style={{ width: 16, height: 16 }} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         ) : (
           renderAnalytics()
         )}

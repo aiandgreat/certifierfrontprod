@@ -23,7 +23,7 @@ const LoginPage = () => {
   const isSchoolEmail = (value) => value.trim().toLowerCase().endsWith(SCHOOL_EMAIL_DOMAIN);
 
   const redirectByRole = (role) => {
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'sub_admin') {
       navigate('/AdminDashboard');
       return;
     }
@@ -42,6 +42,9 @@ const LoginPage = () => {
     const role = params.get('role');
     const fullName = params.get('full_name');
     const authError = params.get('error');
+    const deptId = params.get('department_id');
+    const deptName = params.get('department_name');
+    const deptAbbr = params.get('department_abbreviation');
 
     if (authError) {
       setError(authError);
@@ -55,6 +58,15 @@ const LoginPage = () => {
     localStorage.setItem('token', access);
     localStorage.setItem('user_role', role);
     localStorage.setItem('user_name', fullName || 'User');
+    if (deptId) {
+      localStorage.setItem('department_id', deptId);
+      localStorage.setItem('department_name', deptName || '');
+      localStorage.setItem('department_abbreviation', deptAbbr || '');
+    } else {
+      localStorage.removeItem('department_id');
+      localStorage.removeItem('department_name');
+      localStorage.removeItem('department_abbreviation');
+    }
     setShowSuccessToast(true);
 
     // Remove sensitive query params from URL before redirect.
@@ -82,10 +94,19 @@ const LoginPage = () => {
         password: password
       });
 
-      const { access, role, full_name } = response.data;
+      const { access, role, full_name, department_id, department_name, department_abbreviation } = response.data;
       localStorage.setItem('token', access);
       localStorage.setItem('user_role', role);
       localStorage.setItem('user_name', full_name);
+      if (department_id) {
+        localStorage.setItem('department_id', department_id);
+        localStorage.setItem('department_name', department_name || '');
+        localStorage.setItem('department_abbreviation', department_abbreviation || '');
+      } else {
+        localStorage.removeItem('department_id');
+        localStorage.removeItem('department_name');
+        localStorage.removeItem('department_abbreviation');
+      }
 
       setShowSuccessToast(true);
 
