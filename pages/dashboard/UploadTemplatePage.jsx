@@ -162,14 +162,35 @@ const UploadTemplatePage = () => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
     if (!naturalWidth || !naturalHeight) return;
     setPreviewOrientation(naturalHeight > naturalWidth ? 'portrait' : 'landscape');
-    setMarkers((prev) => prev.map((marker) => {
-      const previewFontSize = marker.previewFontSize ?? marker.fontSize;
-      return {
-        ...marker,
-        previewFontSize,
-        fontSize: toOutputFontSize(previewFontSize)
-      };
-    }));
+    
+    const scale = getFontScaleFactor();
+    
+    setMarkers((prev) => {
+      const updatedMarkers = prev.map((marker) => {
+        const previewFontSize = marker.previewFontSize ?? (scale > 0 ? Math.round(marker.fontSize / scale) : marker.fontSize);
+        return {
+          ...marker,
+          previewFontSize,
+          fontSize: marker.fontSize // Keep output size unchanged!
+        };
+      });
+
+      // Update placeholderStyles to match the calculated previewFontSize
+      setPlaceholderStyles((prevStyles) => {
+        const nextStyles = { ...prevStyles };
+        updatedMarkers.forEach((marker) => {
+          if (nextStyles[marker.key]) {
+            nextStyles[marker.key] = {
+              ...nextStyles[marker.key],
+              fontSize: marker.previewFontSize
+            };
+          }
+        });
+        return nextStyles;
+      });
+
+      return updatedMarkers;
+    });
   };
 
   const getFontScaleFactor = () => {
@@ -364,8 +385,7 @@ const UploadTemplatePage = () => {
     if (eventLogoFile) {
       formData.append('event_logo', eventLogoFile);
     }
-    const payloadMarkers = markers.map(({ previewFontSize, ...marker }) => marker);
-    formData.append('placeholders', JSON.stringify({ version: 1, markers: payloadMarkers }));
+    formData.append('placeholders', JSON.stringify({ version: 1, markers: markers }));
     
     try {
       const token = localStorage.getItem('token');
