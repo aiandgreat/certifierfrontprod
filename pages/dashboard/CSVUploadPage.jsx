@@ -238,6 +238,29 @@ const CSVUploadPage = () => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const headers = ['title', 'full_name', 'course', 'issued_by', 'date_issued', 'email'];
+    const sampleRows = [
+      ['Certificate of Completion', 'Aian Jae S. Garcia', 'BSCS', 'Dean John Doe', '2026-07-05', 'student1@ua.edu.ph'],
+      ['Certificate of Appreciation', 'Jane Doe', 'BSIT', 'Director Smith', '2026-07-05', 'student2@ua.edu.ph']
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...sampleRows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'certificate_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const totalCsvPages = Math.max(1, Math.ceil(csvRows.length / ITEMS_PER_PAGE));
   const csvStartIndex = (currentCsvPage - 1) * ITEMS_PER_PAGE;
   const paginatedCsvRows = csvRows.slice(csvStartIndex, csvStartIndex + ITEMS_PER_PAGE);
@@ -307,6 +330,30 @@ const CSVUploadPage = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="csv-info-box" style={{ marginBottom: '20px', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1.5px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h4 style={{ margin: 0, color: '#0D1282', fontSize: '0.95rem', fontWeight: '700' }}>CSV Upload Guide</h4>
+                  <button 
+                    type="button" 
+                    onClick={handleDownloadTemplate}
+                    className="pagination-btn"
+                    style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', margin: 0, height: 'auto' }}
+                  >
+                    <FileText size={14} /> Download Template
+                  </button>
+                </div>
+                <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#475569', fontWeight: '600' }}>
+                  Required Columns for the CSV:
+                </p>
+                <code style={{ display: 'block', background: '#f1f5f9', padding: '8px 12px', borderRadius: '8px', fontSize: '0.75rem', fontFamily: 'monospace', color: '#0f172a', marginBottom: '12px', border: '1px solid #e2e8f0', wordBreak: 'break-all' }}>
+                  title, full_name, course, issued_by, date_issued, email
+                </code>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', color: '#b45309', fontSize: '0.8rem', lineHeight: '1.4' }}>
+                  <AlertCircle size={15} style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <span>Double check credentials and information before uploading or committing.</span>
+                </div>
               </div>
 
               <div
