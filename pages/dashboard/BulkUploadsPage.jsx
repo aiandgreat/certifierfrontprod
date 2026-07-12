@@ -13,6 +13,18 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
   const [modal, setModal] = useState({ show: false, title: '', message: '', onConfirm: null });
   const token = localStorage.getItem('token');
 
+  const getFileName = (url) => {
+    if (!url) return 'Unknown File';
+    try {
+      const decoded = decodeURIComponent(url);
+      const parts = decoded.split('/');
+      const fileName = parts[parts.length - 1];
+      return fileName.split('?')[0];
+    } catch (e) {
+      return 'Unknown File';
+    }
+  };
+
   useEffect(() => {
     fetchUploads();
   }, []);
@@ -43,10 +55,11 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
   };
 
   const confirmDelete = (upload) => {
+    const name = getFileName(upload.csv_file);
     setModal({
       show: true,
       title: 'Confirm Delete',
-      message: `Are you sure you want to delete ${upload.file_name}? This action cannot be undone.`,
+      message: `Are you sure you want to delete ${name}? This action cannot be undone.`,
       onConfirm: () => {
         deleteUpload(upload.id);
         setModal({ ...modal, show: false });
@@ -73,31 +86,33 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
       <div className="table-header"><h3>Bulk Uploads</h3></div>
       <div className="table-responsive">
         <table className="admin-table">
-          <thead><tr><th>ID</th><th>File Name</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>File Name</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {uploads.map((upload) => (
-              <React.Fragment key={upload.id}>
-                <tr onClick={() => setExpandedUpload(expandedUpload === upload.id ? null : upload.id)} style={{ cursor: 'pointer' }}>
-                  <td>{upload.id}</td>
-                  <td>{upload.file_name}</td>
-                  <td><span className={`badge ${upload.status?.toLowerCase() === 'completed' ? 'valid' : 'invalid'}`}>{upload.status}</span></td>
-                  <td><button className="delete-btn-sm" onClick={(e) => { e.stopPropagation(); confirmDelete(upload); }}><Trash2 size={16} /></button></td>
-                </tr>
-                {expandedUpload === upload.id && (
-                  <tr>
-                    <td colSpan="4" className="upload-details">
-                      <div className="details-content">
-                        <h4>Details for {upload.file_name}</h4>
-                        <div className="upload-stats">
-                          <p><strong>Total Records:</strong> {upload.total_records || 0}</p>
-                          <p><strong>Processed Records:</strong> {upload.processed_records || 0}</p>
-                        </div>
-                      </div>
-                    </td>
+            {uploads.map((upload) => {
+              const fileName = getFileName(upload.csv_file);
+              return (
+                <React.Fragment key={upload.id}>
+                  <tr onClick={() => setExpandedUpload(expandedUpload === upload.id ? null : upload.id)} style={{ cursor: 'pointer' }}>
+                    <td>{fileName}</td>
+                    <td><span className={`badge ${upload.status?.toLowerCase() === 'completed' ? 'valid' : 'invalid'}`}>{upload.status}</span></td>
+                    <td><button className="delete-btn-sm" onClick={(e) => { e.stopPropagation(); confirmDelete(upload); }}><Trash2 size={16} /></button></td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
+                  {expandedUpload === upload.id && (
+                    <tr>
+                      <td colSpan="3" className="upload-details">
+                        <div className="details-content">
+                          <h4>Details for {fileName}</h4>
+                          <div className="upload-stats">
+                            <p><strong>Total Records:</strong> {upload.total_records || 0}</p>
+                            <p><strong>Processed Records:</strong> {upload.processed_records || 0}</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
