@@ -16,10 +16,11 @@ const BulkUploadsPage = ({ closeMobileNav }) => {
   const getFileName = (url) => {
     if (!url) return 'Unknown File';
     try {
-      const decoded = decodeURIComponent(url);
+      const pathOnly = url.split('?')[0];
+      const decoded = decodeURIComponent(pathOnly);
       const parts = decoded.split('/');
       const fileName = parts[parts.length - 1];
-      return fileName.split('?')[0];
+      return fileName || 'Unknown File';
     } catch (e) {
       return 'Unknown File';
     }
