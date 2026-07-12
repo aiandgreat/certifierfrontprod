@@ -142,7 +142,9 @@ const StudentDashboard = () => {
 
       {/* SIDEBAR */}
       <aside className={`student-sidebar ${isMobileNavOpen ? 'open' : ''}`}>
-        <h2>CertiFier</h2>
+        <div className="sidebar-logo-container">
+          <img src={CertiLogo} alt="CertiFier Logo" className="sidebar-logo" />
+        </div>
 
         <nav className="student-nav">
           <Link to="/StudentDashboard" className="student-nav-link active" onClick={closeMobileNav}>

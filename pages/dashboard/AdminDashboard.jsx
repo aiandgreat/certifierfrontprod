@@ -12,6 +12,7 @@ import reissue from '../../src/Images/reissue.svg';
 import edit from '../../src/Images/edit.svg';
 import BulkUploadsPage from './BulkUploadsPage';
 import { API_BASE } from '/src/config';
+import CertiLogo from '../../src/Images/CertiLogo.png';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -616,7 +617,9 @@ const AdminDashboard = () => {
       {toast.show && <div className="delete-success-toast"><span className="toast-icon">✅</span><p>{toast.message}</p></div>}
 
       <aside className={`admin-sidebar ${isMobileNavOpen ? 'open' : ''}`}>
-        <h2>CertiFier</h2>
+        <div className="sidebar-logo-container">
+          <img src={CertiLogo} alt="CertiFier Logo" className="sidebar-logo" />
+        </div>
         <nav className="admin-nav">
           <button className={`admin-nav-link ${currentView === 'overview' ? 'active' : ''}`} onClick={() => { setCurrentView('overview'); closeMobileNav(); }}><LayoutDashboard size={20} /> Overview</button>
           {userRole === 'admin' && (
