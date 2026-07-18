@@ -13,7 +13,6 @@
 
 
 html, body {
-  min-height: 100%;
   width: 100%;
   overflow-x: hidden;
 }
@@ -34,11 +33,15 @@ body {
 }
 
 header {
-  flex: 1;
+  /* Dynamic height: fill the screen, but grow if elements overflow */
+  min-height: 75vh; 
+  width: 100%;
+  
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  
   background-image: 
     linear-gradient(
       to bottom, 
@@ -50,10 +53,14 @@ header {
   background-position: center;
   background-repeat: no-repeat;
   color: #EEEDED;
-  padding: 0 20px;
+  
+  /* Give it consistent padding so things don't touch the screen edge */
+  padding: 2rem 20px; 
   text-align: center;
   position: relative;
-  overflow: hidden;
+  
+  /* REMOVE overflow: hidden; so we can see if things clip, 
+     though min-height solves this anyway */
   border-bottom: 8px solid #F0DE36;
 }
 
@@ -69,9 +76,25 @@ header::before {
   filter: blur(80px);
 }
 
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 800px;
+  width: 100%;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 header h1 {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  margin-bottom: 0.5rem;
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  margin: 0;
   font-weight: 800;
   letter-spacing: -1px;
   color: #FFFFFF;
@@ -79,34 +102,38 @@ header h1 {
 }
 
 header p {
-  font-size: clamp(0.9rem, 1.2vw, 1.2rem);
-  margin-bottom: 1.5rem;
+  font-size: clamp(0.95rem, 1.25vw, 1.25rem);
+  margin: 0;
   max-width: 50rem;
   color: #EEEDED;
   opacity: 0.9;
 }
 
-.LOGOS,
-.cta-buttons {
+.LOGOS {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
   flex-wrap: wrap;
 }
 
-.LOGOS {
-  margin-bottom: 1rem;
-}
-
 .cta-buttons {
-  row-gap: 0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-button {
-  padding: 1.2vh 2vw;
-  font-size: clamp(0.7rem, 0.9vw, 1rem);
+.cta-buttons a {
+  text-decoration: none;
+}
+
+.cta-buttons button {
+  padding: 0.85rem 2.2rem;
+  font-size: 1rem;
   font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
@@ -114,20 +141,12 @@ button {
   text-transform: uppercase;
   letter-spacing: 1px;
   border: none;
-}
-
-header button {
   background: #F0DE36;
   color: #0D1282;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-header button:nth-child(2) {
-  background: #D71313;
-  color: #ffffff;
-}
-
-header button:hover {
+.cta-buttons button:hover {
   transform: translateY(-3px);
   filter: brightness(1.1);
 }
@@ -135,10 +154,16 @@ header button:hover {
 section {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2vw;
+  
+  /* 1. Reduce the vertical space between grid rows if they wrap (from 2.5rem) */
+  gap: 1.5rem; 
+  
   width: 90%;
   max-width: 1200px;
-  margin: 2vh auto;
+  
+  /* 2. Cut the massive outside page margin in half (from 4rem auto) */
+  margin: 2rem auto; 
+  
   padding: 0 20px;
   position: relative;
   z-index: 10;
@@ -146,7 +171,10 @@ section {
 
 section div {
   background: #ffffff; 
-  padding: 2vh;
+  
+  /* 3. Compress the top and bottom interior cushion of the cards (from 2.5rem) */
+  padding: 1.5rem 1.5rem; 
+  
   border-radius: 12px;
   text-align: center;
   border-top: 5px solid #0D1282;
@@ -164,18 +192,6 @@ section p {
   font-size: clamp(0.8rem, 0.9vw, 1rem);
 }
 
-footer {
-  text-align: center;
-  padding: 1.5vh 20px;
-  background-color: #0D1282;
-  color: #EEEDED;
-  border-top: 4px solid #D71313;
-}
-
-footer p {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
 
 @media (max-width: 768px) {
   .logo {
@@ -183,7 +199,8 @@ footer p {
   }
 
   header {
-    padding: 1.5rem 16px;
+    min-height: 70vh; /* Keeps it tall on mobile, but stops it from creating that massive void */
+    padding: 2rem 16px 0.5rem 16px;
   }
 
   header h1 { font-size: 2rem; }
@@ -196,13 +213,17 @@ footer p {
     padding: 0.85rem 1.1rem;
   }
 
-  section { 
-    grid-template-columns: 1fr; 
-    gap: 12px; 
-    margin: 12px auto; 
+  section {
+    grid-template-columns: 1fr; /* Ensures a strict single-column stack */
+    gap: 1rem;                  /* Tightens the vertical space between cards */
+    width: 95%;                 /* Pushes the cards wider to utilize screen width */
+    margin: 1.5rem auto;        /* Drops layout whitespace above and below the grid */
+    padding: 0 10px;            /* Minimizes side padding so cards stretch smoothly */
   }
 
-  section div { padding: 14px; }
+  section div {
+    padding: 1.25rem 1rem;      /* Compresses internal card text padding for small viewports */
+  }
 }
 
 @media (max-width: 480px) {

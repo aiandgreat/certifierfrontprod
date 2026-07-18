@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './App.css'; 
 import uaLogo from './Images/UALOGO.png';
 import CertiLogo from '../src/Images/CertiLogo.png';
+import Footer from '../pages/components/Footer';
 
 const HomePage = () => {
   return (
@@ -13,8 +14,10 @@ const HomePage = () => {
             <img className="logo" src={CertiLogo} alt="CertiFier Logo" />
             <img className="logo" src={uaLogo} alt="UA LOGO" />
           </div>
-          <h1>CertiFier</h1>
-          <p>University of the Assumption's First Automated Certificate Generation and Verification system.</p>
+          <div className="hero-text">
+            <h1>CertiFier</h1>
+            <p>University of the Assumption's First Automated Certificate Generation and Verification system.</p>
+          </div>
           
           <div className="cta-buttons">
             <Link to="/register">
@@ -45,9 +48,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      <footer>
-        <p>&copy; 2026 CertiFier | GALARA. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

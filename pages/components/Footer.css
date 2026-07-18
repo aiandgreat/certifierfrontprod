@@ -1,0 +1,218 @@
+/* ===================================================
+   Site-wide Footer Styles
+   =================================================== */
+
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 3rem;
+  background: linear-gradient(135deg, #0a0f6b 0%, #0D1282 60%, #1a1fa0 100%);
+  border-top: 4px solid #F0DE36;
+  color: #e8eaf6;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box; 
+  margin: 2rem -2rem -2rem -2rem;
+  width: calc(100% + 4rem);
+}
+
+.auth-content {
+  flex-grow: 1; /* 👈 This pushes the footer perfectly to the bottom of the dark screen */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Keeps your login card centered vertically */
+  align-items: center;
+}
+/* Subtle shimmer overlay */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(240, 222, 54, 0.07) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ---- LEFT: CIT logo ---- */
+.footer-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.footer-cit-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  outline-offset: 3px;
+}
+
+.footer-cit-link:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 6px 24px rgba(240, 222, 54, 0.25);
+  filter: brightness(1.1);
+}
+
+.footer-cit-link:focus-visible {
+  outline: 3px solid #F0DE36;
+  outline-offset: 4px;
+}
+
+.footer-cit-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ---- CENTER: copyright ---- */
+.footer-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.footer-copyright {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #c5cae9;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.footer-tagline {
+  font-size: 0.7rem;
+  color: rgba(197, 202, 233, 0.65);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ---- RIGHT: brand logo + dev names ---- */
+.footer-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.footer-brand-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(240, 222, 54, 0.2));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.footer-brand-logo:hover {
+  filter: drop-shadow(0 4px 16px rgba(240, 222, 54, 0.4));
+  transform: scale(1.04);
+}
+
+.footer-developers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.footer-dev-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(197, 202, 233, 0.6);
+  font-weight: 600;
+}
+
+.footer-dev-names {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0;
+  row-gap: 0.1rem;
+}
+
+.footer-dev-name {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #F0DE36;
+  white-space: nowrap;
+}
+
+.footer-dev-sep {
+  color: rgba(197, 202, 233, 0.45);
+  font-weight: 400;
+  margin: 0 1px;
+}
+
+/* ===================================================
+   Responsive
+   =================================================== */
+@media (max-width: 900px) {
+  .site-footer {
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    flex: unset;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-cit-logo {
+    height: 36px;
+  }
+
+  .footer-brand-logo {
+    height: 30px;
+  }
+
+  .footer-dev-names {
+    justify-content: center;
+  }
+
+  .footer-developers {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .footer-cit-logo {
+    height: 28px;
+  }
+
+  .footer-brand-logo {
+    height: 26px;
+  }
+
+  .footer-copyright {
+    font-size: 0.72rem;
+  }
+
+  .footer-dev-name {
+    font-size: 0.65rem;
+  }
+}

@@ -122,7 +122,8 @@ html, body {
 /* 4. MAIN CONTENT AREA: Enabled native scroll */
 .student-main {
   flex-grow: 1;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   overflow-y: auto;
   min-width: 0;
@@ -130,13 +131,17 @@ html, body {
 }
 
 .student-content {
+  flex: 1;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 /* 5. HEADER: Restored original styling */
 .student-header {
   margin-bottom: 1.5rem;
+  min-height: 0;
 }
 
 .student-header h1 {

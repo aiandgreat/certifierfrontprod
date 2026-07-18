@@ -13,6 +13,7 @@ import edit from '../../src/Images/edit.svg';
 import BulkUploadsPage from './BulkUploadsPage';
 import { API_BASE } from '/src/config';
 import CertiLogo from '../../src/Images/CertiLogo.png';
+import Footer from '../components/Footer';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -637,7 +638,8 @@ const AdminDashboard = () => {
       </aside>
 
       <main className="admin-main">
-        <header>
+        <div className="admin-content">
+        <header className='admin-header'>
           <h1>{
             currentView === 'overview' ? (userRole === 'admin' ? 'Administrator Dashboard' : `Sub-Admin Dashboard - ${localStorage.getItem('department_abbreviation') || ''}`) :
             currentView === 'analytics' ? 'System Analytics' :
@@ -1088,6 +1090,8 @@ const AdminDashboard = () => {
         ) : (
           renderAnalytics()
         )}
+        </div>
+        <Footer />
       </main>
 
       {modal.show && (

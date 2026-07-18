@@ -5,6 +5,7 @@ import { User, Mail, Lock, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-r
 import './auth.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/Hotel.jpg';
+import Footer from '../components/Footer';
 
 import { API_BASE } from '/src/config';
 
@@ -93,6 +94,7 @@ const RegisterPage = () => {
         </div>
       )}
 
+    <div className="auth-content-wrapper">
       <button className="back-btn" onClick={() => navigate('/HomePage')}>
         <ArrowLeft size={18} />
         Back
@@ -233,6 +235,7 @@ const RegisterPage = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import '../auth/auth.css';
 import './VerifyPage.css';
 import CertiLogo from '../../src/Images/CertiLogo.png';
 import stacy from '../../src/Images/flagpole.jpg';
+import Footer from '../components/Footer';
 
 import { API_BASE } from '/src/config';
 
@@ -174,6 +175,7 @@ const VerifyPage = () => {
 
     return (
         <div className="auth-container">
+            <div className="auth-content-wrapper">
             <button className="back-btn" onClick={() => navigate(-1)}>
                 <ArrowLeft size={18} />
                 Back
@@ -327,6 +329,8 @@ const VerifyPage = () => {
                     </div>
                 </div>
             </div>
+            </div>
+            <Footer />
         </div>
     );
 };

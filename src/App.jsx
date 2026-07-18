@@ -24,7 +24,6 @@ function App() {
         <Route path="/EditTemplate/:id" element={<UploadTemplatePage />} />
         <Route path="/CSVUpload" element={<CSVUploadPage />} />
         <Route path="*" element={<HomePage />} />
-
       </Routes>
     </Router>
   );

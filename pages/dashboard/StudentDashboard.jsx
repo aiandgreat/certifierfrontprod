@@ -5,6 +5,7 @@ import { LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react';
 import './StudentDashboard.css';
 import { API_BASE } from '/src/config';
 import CertiLogo from '../../src/Images/CertiLogo.png';
+import Footer from '../components/Footer';
 const ITEMS_PER_PAGE = 10;
 
 const StudentDashboard = () => {
@@ -261,6 +262,7 @@ const StudentDashboard = () => {
           </section>
 
         </div>
+        <Footer />
       </main>
 
       {/* MODAL */}
@@ -278,7 +280,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

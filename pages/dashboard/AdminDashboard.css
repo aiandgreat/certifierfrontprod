@@ -1,9 +1,13 @@
 .admin-container {
   display: flex;
-  height: 100vh;
+  height: 100vh;     /* Lock to exact screen height */
   width: 100vw;
-  overflow: hidden;
+  overflow: hidden;  /* Prevents the sidebar from scrolling away */
   background-color: #f8f9fa;
+}
+.admin-header {
+  margin-bottom: 1.5rem;
+  min-height: auto;
 }
 
 .mobile-menu-toggle {
@@ -109,7 +113,24 @@
   padding: 2rem;
   height: 100vh;
   overflow-y: auto;
+  
+  /* 👇 Add this line to prevent horizontal overflow */
+  overflow-x: hidden; 
+  
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box; /* Ensures padding stays inside the box width */
+}
+.admin-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  
+  /* 👇 Change from width: 100% to max-width: 100% to stop element bleeding */
+  max-width: 100%; 
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-stats-grid {
