@@ -2,14 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import JSZip from 'jszip';
-import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon, Database, Building2 } from 'lucide-react';
+import { Leaf, BarChart3, LayoutDashboard, FileText, Upload, ShieldCheck, LogOut, Trash2, Edit2, UserPlus, Download as DownloadIcon, Database, Building2, RefreshCw, UserCheck } from 'lucide-react';
 import './AdminDashboard.css';
 import PlaceholderImg from '../../src/assets/hero.png';
-import assign from '../../src/Images/assign.svg';
-import download from '../../src/Images/download.svg';
-import deleteicon from '../../src/Images/delete.svg';
-import reissue from '../../src/Images/reissue.svg';
-import edit from '../../src/Images/edit.svg';
 import BulkUploadsPage from './BulkUploadsPage';
 import { API_BASE } from '/src/config';
 import CertiLogo from '../../src/Images/CertiLogo.png';
@@ -638,7 +633,6 @@ const AdminDashboard = () => {
       </aside>
 
       <main className="admin-main">
-        <div className="admin-content">
         <header className='admin-header'>
           <h1>{
             currentView === 'overview' ? (userRole === 'admin' ? 'Administrator Dashboard' : `Sub-Admin Dashboard - ${localStorage.getItem('department_abbreviation') || ''}`) :
@@ -653,6 +647,8 @@ const AdminDashboard = () => {
             currentView === 'departments' ? 'Add and manage university departments.' : ''
           }</p>
         </header>
+
+        <div className="admin-content">
 
         {currentView === 'overview' ? (
           <>
@@ -784,17 +780,17 @@ const AdminDashboard = () => {
                                       });
                                     }}
                                   >
-                                    <img src={edit} alt="" style={{ width: 16, height: 16 }} />
+                                    <Edit2 size={16} />
                                   </button>
 
-                                  {user.role !== 'admin' && (
-                                    <button
-                                      className="delete-btn"
-                                      onClick={() => handleDelete(user.id, 'user')}
-                                    >
-                                      <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
-                                    </button>
-                                  )}
+                                    {user.role !== 'admin' && (
+                                      <button
+                                        className="delete-btn"
+                                        onClick={() => handleDelete(user.id, 'user')}
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    )}
                                 </>
                               )}
                             </div>
@@ -863,8 +859,7 @@ const AdminDashboard = () => {
                       title={canUseSingleSelectionActions ? 'Reissue selected certificate' : 'Select one certificate to reissue'}
                       aria-label="Reissue selected certificate"
                     >
-                      <img src={reissue} alt="" style={{ width: 16, height: 16 }} />
-                      <Edit2 size={16} />
+                      <RefreshCw size={16} />
                     </button>
                     <button
                       type="button"
@@ -874,8 +869,7 @@ const AdminDashboard = () => {
                       title={canUseSingleSelectionActions ? 'Assign selected certificate' : 'Select one certificate to assign'}
                       aria-label="Assign selected certificate"
                     >
-                      <img src={assign} alt="" style={{ width: 16, height: 16 }} />
-                      <UserPlus size={16} />
+                      <UserCheck size={16} />
                     </button>
                     <button
                       type="button"
@@ -885,8 +879,6 @@ const AdminDashboard = () => {
                       title={canDownloadRecentCerts ? `Download ${selectedRecentCerts.length} selected certificate(s)` : 'Select a certificate to download'}
                       aria-label="Download certificates"
                     >
-                      <img src={download} alt="" style={{ width: 16, height: 16 }} />
-
                       <DownloadIcon size={16} />
                     </button>
                     <button
@@ -897,8 +889,6 @@ const AdminDashboard = () => {
                       title={canUseSingleSelectionActions ? 'Delete selected certificate' : 'Select one certificate to delete'}
                       aria-label="Delete selected certificate"
                     >
-                      <img src={deleteicon} alt="" style={{ width: 16, height: 16 }} />
-
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -1059,7 +1049,7 @@ const AdminDashboard = () => {
                               ) : (
                                 <>
                                   <button className="edit-btn" onClick={() => setEditingDept(dept.id)}>
-                                    <img src={edit} alt="Edit" style={{ width: 16, height: 16 }} />
+                                    <Edit2 size={16} />
                                   </button>
                                   <button className="delete-btn" onClick={async () => {
                                     if (window.confirm("Are you sure you want to delete this department?")) {
@@ -1073,7 +1063,7 @@ const AdminDashboard = () => {
                                       }
                                     }
                                   }}>
-                                    <img src={deleteicon} alt="Delete" style={{ width: 16, height: 16 }} />
+                                    <Trash2 size={16} />
                                   </button>
                                 </>
                               )}

@@ -1,13 +1,40 @@
 .admin-container {
   display: flex;
   height: 100vh;     /* Lock to exact screen height */
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;  /* Prevents the sidebar from scrolling away */
   background-color: #f8f9fa;
 }
 .admin-header {
-  margin-bottom: 1.5rem;
-  min-height: auto;
+  background-image: 
+    linear-gradient(
+      to bottom, 
+      rgba(10, 15, 107, 0.75), 
+      rgba(13, 18, 130, 0.75)
+    ),
+    url('../../src/Images/Stacy.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 1.75rem 2rem;
+  border-bottom: 4px solid #F0DE36;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
+.admin-header h1 {
+  color: white;
+  font-size: 2rem;
+  margin: 0 0 5px 0;
+  font-weight: 800;
+}
+
+.admin-header p {
+  color: rgba(238, 238, 238, 0.85);
+  font-size: 1rem;
+  margin: 0;
 }
 
 .mobile-menu-toggle {
@@ -110,7 +137,6 @@
 
 .admin-main {
   flex-grow: 1;
-  padding: 2rem;
   height: 100vh;
   overflow-y: auto;
   
@@ -126,6 +152,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  padding: 0;
   
   /* 👇 Change from width: 100% to max-width: 100% to stop element bleeding */
   max-width: 100%; 
@@ -719,25 +746,25 @@
 }
 
 .icon-action-btn-primary {
-  background: #ffffff;
+  background: #0D1282;
   color: #ffffff;
-  border-color: #000000;
+  border-color: #0D1282;
 }
 
 .icon-action-btn-primary:hover:not(:disabled) {
-  background: rgb(255, 255, 255);
-  border-color: #000000;
+  background: #0a0f6b;
+  border-color: #0a0f6b;
 }
 
 .icon-action-btn-danger {
-  background: #ffffff;
+  background: #D71313;
   color: #ffffff;
-  border-color: #0a0000;
+  border-color: #D71313;
 }
 
 .icon-action-btn-danger:hover:not(:disabled) {
-  background: #ffffff;
-  border-color: #130101;
+  background: #b00f0f;
+  border-color: #b00f0f;
 }
 
 .issuance-toolbar {
@@ -772,6 +799,15 @@
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
+}
+
+.action-buttons .edit-btn,
+.action-buttons .delete-btn {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
 }
 
 .action-buttons-collapse {
@@ -1383,9 +1419,13 @@
   }
 
   .admin-main {
-    padding: 1rem;
+    padding: 0;
     height: auto;
     min-height: 0;
+  }
+
+  .admin-content {
+    padding: 0;
   }
 }
 

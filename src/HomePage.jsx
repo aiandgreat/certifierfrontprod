@@ -8,11 +8,15 @@ import Footer from '../pages/components/Footer';
 const HomePage = () => {
   return (
     <div className="home-container">
-      <header>
+      <header className="hero-header">
         <div className="hero-content">
           <div className='LOGOS'>
-            <img className="logo" src={CertiLogo} alt="CertiFier Logo" />
-            <img className="logo" src={uaLogo} alt="UA LOGO" />
+            <div className="logo-wrapper">
+              <img className="logo" src={CertiLogo} alt="CertiFier Logo" />
+            </div>
+            <div className="logo-wrapper">
+              <img className="logo" src={uaLogo} alt="UA LOGO" />
+            </div>
           </div>
           <div className="hero-text">
             <h1>CertiFier</h1>

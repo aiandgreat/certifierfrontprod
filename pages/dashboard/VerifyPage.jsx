@@ -330,7 +330,6 @@ const VerifyPage = () => {
                 </div>
             </div>
             </div>
-            <Footer />
         </div>
     );
 };

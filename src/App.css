@@ -8,6 +8,41 @@
   width: 190px;
   height: auto;
   margin-bottom: 0;
+  display: block;
+}
+
+.logo-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.logo-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.logo-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+}
+
+.logo-wrapper:hover::after {
+  left: 150%;
+  transition: left 0.85s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 
@@ -32,7 +67,7 @@ body {
   width: 100%;
 }
 
-header {
+.hero-header {
   /* Dynamic height: fill the screen, but grow if elements overflow */
   min-height: 75vh; 
   width: 100%;
@@ -64,7 +99,7 @@ header {
   border-bottom: 8px solid #F0DE36;
 }
 
-header::before {
+.hero-header::before {
   content: '';
   position: absolute;
   top: -10%;
@@ -92,7 +127,7 @@ header::before {
   gap: 0.5rem;
 }
 
-header h1 {
+.hero-header h1 {
   font-size: clamp(2.2rem, 4.5vw, 3.8rem);
   margin: 0;
   font-weight: 800;
@@ -101,7 +136,7 @@ header h1 {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
-header p {
+.hero-header p {
   font-size: clamp(0.95rem, 1.25vw, 1.25rem);
   margin: 0;
   max-width: 50rem;
@@ -198,14 +233,14 @@ section p {
     width: 150px;
   }
 
-  header {
+  .hero-header {
     min-height: 70vh; /* Keeps it tall on mobile, but stops it from creating that massive void */
     padding: 2rem 16px 0.5rem 16px;
   }
 
-  header h1 { font-size: 2rem; }
+  .hero-header h1 { font-size: 2rem; }
 
-  header p {
+  .hero-header p {
     max-width: 100%;
   }
 
@@ -231,11 +266,11 @@ section p {
     width: 120px;
   }
 
-  header h1 {
+  .hero-header h1 {
     font-size: 1.8rem;
   }
 
-  header p {
+  .hero-header p {
     font-size: 0.9rem;
   }
 

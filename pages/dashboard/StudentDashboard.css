@@ -19,7 +19,8 @@ html, body {
 .student-container {
   display: flex;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
   background-color: #f8f9fa;
 }
@@ -126,6 +127,7 @@ html, body {
   flex-direction: column;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden; 
   min-width: 0;
   background-color: #f8f9fa;
 }
@@ -138,22 +140,35 @@ html, body {
   padding: 2rem;
 }
 
-/* 5. HEADER: Restored original styling */
 .student-header {
-  margin-bottom: 1.5rem;
-  min-height: 0;
+  background-image: 
+    linear-gradient(
+      to bottom, 
+      rgba(10, 15, 107, 0.75), 
+      rgba(13, 18, 130, 0.75)
+    ),
+    url('../../src/Images/Stacy.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 1.75rem 2rem;
+  border-bottom: 4px solid #F0DE36;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
 }
 
 .student-header h1 {
   color: white;
-  font-size: 2.2rem;
-  margin-bottom: 5px;
+  font-size: 2rem;
+  margin: 0 0 5px 0;
   font-weight: 800;
 }
 
 .student-header p {
-  color: white;
-  font-size: 1.1rem;
+  color: rgba(238, 238, 238, 0.85);
+  font-size: 1rem;
+  margin: 0;
 }
 
 /* 6. CERTIFICATES SECTION */
@@ -491,10 +506,11 @@ html, body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 280px;
+    width: min(280px, 82vw);
     height: 100vh;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
+    overflow-y: auto;
   }
 
   .student-sidebar.open {
@@ -525,8 +541,11 @@ html, body {
   .student-main {
     height: auto;
     overflow-y: visible;
+    padding: 0;
+  }
+
+  .student-content {
     padding: 1rem;
-    padding-top: 1rem;
   }
 
   .certs-grid {

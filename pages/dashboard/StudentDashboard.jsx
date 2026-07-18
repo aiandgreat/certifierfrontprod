@@ -164,13 +164,13 @@ const StudentDashboard = () => {
       {/* MAIN */}
       <main className="student-main">
 
-        <div className="student-content">
+        {/* HEADER */}
+        <header className="student-header">
+          <h1>Welcome, {userName}</h1>
+          <p>Your issued certificates overview.</p>
+        </header>
 
-          {/* HEADER */}
-          <header className="student-header">
-            <h1>Welcome, {userName}</h1>
-            <p>Your issued certificates overview.</p>
-          </header>
+        <div className="student-content">
 
           {/* CERTIFICATES GRID */}
           <section className="student-certs-section">

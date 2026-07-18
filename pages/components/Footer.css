@@ -39,12 +39,13 @@
   pointer-events: none;
 }
 
-/* ---- LEFT: CIT logo ---- */
+/* ---- LEFT: UA & CIT logos ---- */
 .footer-left {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  gap: 1.25rem;
 }
 
 .footer-cit-link {
@@ -157,6 +158,170 @@
   margin: 0 1px;
 }
 
+.footer-ua-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  outline-offset: 3px;
+}
+
+.footer-ua-link:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 6px 24px rgba(240, 222, 54, 0.25);
+  filter: brightness(1.1);
+}
+
+.footer-ua-link:focus-visible {
+  outline: 3px solid #F0DE36;
+  outline-offset: 4px;
+}
+
+.footer-ua-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ---- PRIVACY POLICY MODAL ---- */
+.footer-privacy-btn {
+  background: none;
+  border: none;
+  color: #F0DE36;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 6px;
+  padding: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-privacy-btn:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.privacy-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 18, 130, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+.privacy-modal-content {
+  background: #ffffff;
+  color: #1e293b;
+  width: 100%;
+  max-width: 650px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  border-top: 8px solid #F0DE36;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 2.25rem 2rem 2rem 2rem;
+}
+
+.privacy-modal-content h2 {
+  color: #0D1282;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.privacy-modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 10px;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.privacy-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.privacy-modal-body::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.privacy-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.privacy-modal-body h3 {
+  color: #0D1282;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+.privacy-modal-body p {
+  margin: 0 0 1rem 0;
+  color: #475569;
+}
+
+.privacy-modal-body ul {
+  padding-left: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: #475569;
+}
+
+.privacy-modal-body li {
+  margin-bottom: 0.25rem;
+}
+
+.privacy-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  font-size: 1.75rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.privacy-close-btn:hover {
+  background: #D71313;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* ===================================================
    Responsive
    =================================================== */
@@ -182,6 +347,10 @@
     height: 36px;
   }
 
+  .footer-ua-logo {
+    height: 42px;
+  }
+
   .footer-brand-logo {
     height: 30px;
   }
@@ -202,6 +371,10 @@
 
   .footer-cit-logo {
     height: 28px;
+  }
+
+  .footer-ua-logo {
+    height: 34px;
   }
 
   .footer-brand-logo {
