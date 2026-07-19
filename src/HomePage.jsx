@@ -11,10 +11,34 @@ const HomePage = () => {
       <header className="hero-header">
         <div className="hero-content">
           <div className='LOGOS'>
-            <div className="logo-wrapper">
+            <div 
+              className="logo-wrapper"
+              style={{
+                WebkitMaskImage: `url(${CertiLogo})`,
+                maskImage: `url(${CertiLogo})`,
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            >
               <img className="logo" src={CertiLogo} alt="CertiFier Logo" />
             </div>
-            <div className="logo-wrapper">
+            <div 
+              className="logo-wrapper"
+              style={{
+                WebkitMaskImage: `url(${uaLogo})`,
+                maskImage: `url(${uaLogo})`,
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            >
               <img className="logo" src={uaLogo} alt="UA LOGO" />
             </div>
           </div>

@@ -6,6 +6,9 @@
   border-radius: 20px;
   padding: 24px;
   background: #f8fafc;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .placeholder-toolbar {
@@ -71,7 +74,8 @@
 
 .template-preview {
   position: relative;
-  width: auto;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   background: #f1f5f9;
   border-radius: 12px;

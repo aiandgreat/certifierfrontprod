@@ -50,7 +50,10 @@ html, body, #root {
 /* 3. Left Section (Premium Blue Panel) */
 .auth-info-section {
   flex: 3;
-  height: 100%;
+  min-width: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   background: linear-gradient(165deg, #0D1282 0%, #06094d 100%);
   color: #EEEDED;
   display: flex;
@@ -58,7 +61,6 @@ html, body, #root {
   justify-content: center;
   align-items: center;
   border-right: 8px solid #F0DE36;
-  position: relative;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -155,6 +157,7 @@ html, body, #root {
 /* 4. Right Section (Clean Form Panel) */
 .auth-form-section {
   flex: 7;
+  min-width: 0;
   height: 100%;
   display: flex;
   align-items: center; 
@@ -186,6 +189,7 @@ html, body, #root {
 }
 
 .auth-card.wide {
+  width: 100%;
   max-width: 1200px;
 }
 
@@ -213,6 +217,8 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .form-group label {
@@ -469,9 +475,8 @@ html, body, #root {
     min-height: 35vh;
     border-right: none;
     border-bottom: 6px solid #F0DE36;
+    position: relative !important;
   }
-
-
 
 
   .auth-form-section {
@@ -490,6 +495,11 @@ html, body, #root {
   .auth-card {
     padding: 24px;
     max-width: 95%;
+  }
+
+  .auth-card.wide {
+    max-width: 95%;
+    width: 95%;
   }
   
   .back-btn {
