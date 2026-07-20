@@ -29,6 +29,7 @@ const DEFAULT_MARKER_STYLE = {
 
 const FONT_OPTIONS = [
   { label: 'Poppins', value: 'Poppins, sans-serif' },
+  { label: 'Bebas Neue', value: '"Bebas Neue", sans-serif' },
   { label: 'Magnolia Script', value: '"Magnolia Script", cursive' },
   { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
   { label: 'Georgia', value: 'Georgia, serif' },
